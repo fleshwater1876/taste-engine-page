@@ -16,6 +16,7 @@
   .steps li { position:relative; background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:12px 14px 12px 46px; color:var(--muted); font-size:13px; }
   .steps li::before { counter-increment:step; content:counter(step); position:absolute; left:12px; top:12px; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font:600 13px/24px system-ui, -apple-system, Segoe UI, Roboto, sans-serif; text-align:center; }
   .steps strong { display:block; color:var(--ink); font-size:14px; margin-bottom:2px; }
+  .list-intro { margin:16px 0 6px; }
   .list-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
   .card-search { margin-top:12px; }
   .card-search input { width:100%; border:1px solid #cfc7bb; background:var(--card); border-radius:10px; padding:10px 12px; font:inherit; }
@@ -42,6 +43,8 @@
   #friend-styles { margin-top:10px; }
   #friend-note { min-height:21px; }
   #friend-progress { min-height:21px; }
+  #friend-submit { margin:6px 0 12px; }
+  #friend-submit:disabled { opacity:.5; cursor:default; }
   #friend-results ul { margin-top:10px; }
   #friend-results .stars { margin-top:5px; }
   #friend-results .star { font-size:19px; }
@@ -70,6 +73,7 @@
   ul { list-style:none; margin:16px 0 0; padding:0; display:grid; gap:10px; }
   li.song { background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:14px 16px; }
   #list ul, #library-list ul { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+  #friend-results ul { grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
   .title { font-weight:650; }
   .blurb { color:var(--muted); font-size:14px; margin:2px 0 8px; }
   .tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
@@ -127,18 +131,19 @@
   .song-meta { color:var(--muted); font-size:12px; }
   @media (max-width: 640px) {
     .steps { grid-template-columns:1fr; }
-    #list ul, #library-list ul { grid-template-columns:1fr; }
+    #list ul, #library-list ul, #friend-results ul { grid-template-columns:1fr; }
     .map-scroll svg { min-width:760px; }
     #map-section .sub { font-size:13px; }
   }
   #find, #find-note, #similar { display:none; }
+  audio, a.save { display:none !important; }
 </style>
 </head>
 <body>
 <header>
   <h1>Taste Engine</h1>
-  <div class="sub">Rate songs 1–5, then press Get 5 new songs beyond your list. Play a 30-second clip too. Ratings stay in this browser.</div>
-  <a id="friend-jump" class="friend-jump" href="#friend-section">Friend test: separate 10-song test ↓</a>
+  <div class="sub">Rate songs 1–5, then press Get 5 new songs beyond your list. No sound on this page. Ratings stay in this browser.</div>
+  <a id="friend-jump" class="friend-jump" href="#friend-section">Does it know your taste? 10-song test ↓</a>
 </header>
 <main>
   <ol class="steps" aria-label="How to use this page">
@@ -146,21 +151,41 @@
     <li><strong>Get 5 new songs</strong>Press the orange button below your list.</li>
     <li><strong>See why</strong>Each pick names the song you liked and its sound tags.</li>
   </ol>
-  <section id="style-section">
-    <h2>Start with a style</h2>
-    <div class="sub">New here? Pick 1–3 styles. No ratings needed.</div>
-    <div id="style-picker" class="style-picker"><span class="outside-note">Loading styles...</span></div>
-    <div id="style-note" class="outside-note"></div>
-  </section>
   <form id="find" class="find">
     <input id="find-input" type="search" placeholder="Type a song title or artist" autocomplete="off" aria-label="Song title or artist">
     <button class="get" type="submit">Find 5 similar</button>
   </form>
   <div id="find-note" class="sub"></div>
+  <section id="friend-section">
+    <h2>Does it know your taste?</h2>
+    <div class="sub"><strong>Rate 10 songs</strong>. The page hides your 3 favourites, recommends 5, then tells you how many of the 3 it found — 3/3 means it knows your taste. Nothing is saved on a server.</div>
+    <div class="friend-box">
+      <div class="friend-top">
+        <div class="friend-name">
+          <label for="friend-name">Friend name</label>
+          <input id="friend-name" class="friend-input" type="text" placeholder="Name" autocomplete="off">
+        </div>
+        <button id="friend-reset" class="reset" type="button">Start over</button>
+      </div>
+      <div id="friend-styles" class="style-picker"><span class="outside-note">Loading styles...</span></div>
+      <div id="friend-note" class="outside-note"></div>
+      <div id="friend-progress" class="sub"></div>
+      <button id="friend-submit" class="get" type="button" disabled>See result (0/10)</button>
+      <div id="friend-result"></div>
+      <div id="friend-results"></div>
+    </div>
+  </section>
+  <div class="list-intro">
+    <h2 style="font-size:18px;margin:0 0 2px">Why these songs</h2>
+    <p class="sub">These are the songs the engine compares you with. Rate 3+ you know; it finds 5 with the closest sound. “Style” is the song’s genre label — a quick filter, not the recommendation.</p>
+  </div>
   <div class="list-top">
     <div id="summary" class="sub"></div>
     <button id="reset" class="reset" type="button" title="Clear ratings and search" disabled>Reset</button>
   </div>
+  <div class="sub" style="margin-top:12px">Filter by style</div>
+  <div id="style-picker" class="style-picker"><span class="outside-note">Loading styles...</span></div>
+  <div id="style-note" class="outside-note"></div>
   <div class="card-search">
     <input id="card-search" type="search" placeholder="Search your songs or the library" aria-label="Search your songs or the library" autocomplete="off">
   </div>
@@ -176,27 +201,7 @@
     <button id="get" class="get" type="button">Get 5 new songs</button>
   </div>
   <div id="picks"></div>
-  <section id="friend-section">
-    <h2>Friend test</h2>
-    <div class="sub">A friend rates 10 different library songs. The page hides their top 3, uses the other 7 to recommend 5, and shows how many hidden songs were found. Nothing is saved on a server.</div>
-    <div class="friend-box">
-      <div class="friend-top">
-        <div class="friend-name">
-          <label for="friend-name">Friend name</label>
-          <input id="friend-name" class="friend-input" type="text" placeholder="Name" autocomplete="off">
-        </div>
-        <button id="friend-reset" class="reset" type="button">Start over</button>
-      </div>
-      <div class="friend-search">
-        <input id="friend-search" class="friend-input" type="search" placeholder="Search the library by song or artist" aria-label="Friend test: search the library" autocomplete="off">
-      </div>
-      <div id="friend-styles" class="style-picker"><span class="outside-note">Loading styles...</span></div>
-      <div id="friend-note" class="outside-note"></div>
-      <div id="friend-progress" class="sub"></div>
-      <div id="friend-result"></div>
-      <div id="friend-results"></div>
-    </div>
-  </section>
+
   <section id="map-section">
     <h2>Catalog map</h2>
     <div class="sub">Each dot is one of 376 songs, placed by its CLAP sound. Color shows its style.</div>
@@ -282,6 +287,26 @@ const outsideCache = {};
 let engineCache = null;
 let engineLoading = null;
 const engineShown = new Set();
+const STYLE_GROUPS = {
+  'Rock & metal': ['rock', 'metal', 'punk'],
+  'Pop': ['pop', 'top kz', 'k-pop', 'j-pop', 'city pop'],
+  'Electronic & lo-fi': ['electronic', 'lofi'],
+  'Hip hop': ['hip hop'],
+  'Folk & country': ['indie folk', 'country', 'blues'],
+  'Jazz & classical': ['jazz', 'classical'],
+  'Soul, reggae & latin': ['r&b soul', 'reggae', 'latin'],
+};
+function styleGroup(style) {
+  for (const group of Object.keys(STYLE_GROUPS)) {
+    if (STYLE_GROUPS[group].includes(style)) return group;
+  }
+  return 'Other';
+}
+const friendRank = new Map();
+function randomRank(song) {
+  if (!friendRank.has(song.id)) friendRank.set(song.id, Math.random());
+  return friendRank.get(song.id);
+}
 const selectedStyles = new Set();
 const mapCircles = new Map();
 let librarySearchTimer = null;
@@ -619,6 +644,7 @@ function render(songs) {
   songs.forEach(song => {
     const li = el('li', 'song');
     li.dataset.search = song.title;
+    li.dataset.group = styleGroup(song.style || 'other');
     li.appendChild(el('div', 'title', song.title));
     if (song.blurb) li.appendChild(el('div', 'blurb', song.blurb));
 
@@ -682,7 +708,9 @@ function filterCardList() {
   const cards = [...document.querySelectorAll('#list li.song')];
   let shown = 0;
   cards.forEach(card => {
-    const match = !query || normText(card.dataset.search || '').includes(query);
+    const textMatch = !query || normText(card.dataset.search || '').includes(query);
+    const styleMatch = !selectedStyles.size || selectedStyles.has(card.dataset.group);
+    const match = textMatch && styleMatch;
     card.hidden = !match;
     if (match) shown++;
   });
@@ -1030,9 +1058,10 @@ function updateStylePicker() {
   const note = document.getElementById('style-note');
   if (note) {
     note.textContent = selectedStyles.size
-      ? 'Using ' + [...selectedStyles].join(' + ') + '. Press Get 5.'
+      ? 'Showing ' + [...selectedStyles].join(' + ') + ' songs. Press Get 5 for new ones.'
       : '';
   }
+  filterCardList();
 }
 
 function loadStylePicker() {
@@ -1042,8 +1071,8 @@ function loadStylePicker() {
       const counts = {};
       data.songs.forEach(song => {
         if (song.source === 'mine') return;
-        const style = song.style || 'other';
-        counts[style] = (counts[style] || 0) + 1;
+        const group = styleGroup(song.style || 'other');
+        counts[group] = (counts[group] || 0) + 1;
       });
       const styles = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
       box.textContent = '';
@@ -1193,8 +1222,8 @@ function buildFriendStyles(data) {
   const counts = {};
   data.songs.forEach(song => {
     if (song.source === 'mine') return;
-    const style = song.style || 'other';
-    counts[style] = (counts[style] || 0) + 1;
+    const group = styleGroup(song.style || 'other');
+    counts[group] = (counts[group] || 0) + 1;
   });
   box.textContent = '';
   Object.keys(counts).sort((a, b) => a.localeCompare(b)).forEach(style => {
@@ -1217,36 +1246,48 @@ function buildFriendStyles(data) {
 function renderFriendSearch() {
   const list = document.getElementById('friend-results');
   const note = document.getElementById('friend-note');
-  const input = document.getElementById('friend-search');
   list.textContent = '';
   if (!friendData) {
     note.textContent = 'Loading the library...';
     return;
   }
-  const query = input.value.trim();
-  if (!query && !friendStyle) {
-    note.textContent = friendRatings.size
-      ? 'Search or choose a style to rate more songs.'
-      : 'Search or choose a style, then rate 10 songs.';
-    return;
-  }
-  const wanted = normText(query);
   const hiddenIds = new Set(friendHiddenEntries().map(entry => entry.song.id));
   const matches = friendData.songs
     .filter(song => song.source !== 'mine')
     .filter(song => !hiddenIds.has(song.id))
-    .filter(song => !friendStyle || song.style === friendStyle)
-    .filter(song => !wanted || normText(song.title + ' ' + (song.artist || '')).includes(wanted))
-    .sort((a, b) => a.title.localeCompare(b.title));
+    .filter(song => !friendStyle || styleGroup(song.style || 'other') === friendStyle)
+    .sort((a, b) => randomRank(a) - randomRank(b));
   if (!matches.length) {
-    note.textContent = query
-      ? 'No library songs match “' + query + '”.'
-      : 'No songs in this style.';
+    note.textContent = 'No songs in this style.';
     return;
   }
-  note.textContent = 'Showing ' + Math.min(10, matches.length) + ' of ' + matches.length + ' matches.';
+  const SHOW = 12;
+  note.textContent = friendStyle
+    ? 'Showing ' + Math.min(SHOW, matches.length) + ' of ' + matches.length + ' songs in this genre.'
+    : SHOW + ' songs from different genres (of ' + matches.length + ') — pick and rate 10.';
+  let shown = matches;
+  if (!friendStyle) {
+    const byGroup = new Map();
+    matches.forEach(song => {
+      const group = styleGroup(song.style || 'other');
+      if (!byGroup.has(group)) byGroup.set(group, []);
+      byGroup.get(group).push(song);
+    });
+    const mixed = [];
+    for (let round = 0; mixed.length < SHOW; round++) {
+      let added = false;
+      byGroup.forEach(list => {
+        if (mixed.length < SHOW && list[round]) {
+          mixed.push(list[round]);
+          added = true;
+        }
+      });
+      if (!added) break;
+    }
+    shown = mixed;
+  }
   const ul = el('ul');
-  matches.slice(0, 10).forEach(song => {
+  shown.slice(0, SHOW).forEach(song => {
     const li = el('li', 'pick');
     li.appendChild(el('div', 'title', song.title));
     const meta = [song.artist, song.style].filter(Boolean).join(' · ');
@@ -1280,7 +1321,6 @@ function renderFriendSearch() {
       });
       row.appendChild(btn);
     }
-    row.appendChild(el('span', 'rating', rating ? rating.rating + '/5' : 'not rated'));
     if (rating) {
       const clear = el('button', 'friend-clear', 'Clear');
       clear.type = 'button';
@@ -1461,21 +1501,21 @@ function updateFriendTest() {
   if (jump) {
     jump.href = count === 10 ? '#friend-result' : '#friend-section';
     jump.textContent = count === 10
-      ? 'Friend test: 10/10 — see the three boxes ↓'
+      ? 'Does it know your taste? See the result ↓'
       : count === 0
-        ? 'Friend test: separate from the main list — rate 10 songs ↓'
-        : 'Friend test: ' + count + '/10 — keep rating inside Friend test ↓';
+        ? 'Does it know your taste? 10-song test ↓'
+        : 'Your taste test: ' + count + '/10 — keep rating ↓';
   }
-  document.getElementById('friend-progress').textContent = count + '/10 rated'
-    + (count === 10 ? ' · 3 hidden, 7 visible' : '');
+  document.getElementById('friend-progress').textContent = count === 10
+    ? '10/10 rated — press See result'
+    : count + '/10 rated · ' + (10 - count) + ' to go';
+  const submit = document.getElementById('friend-submit');
+  if (submit) {
+    submit.disabled = count !== 10;
+    submit.textContent = count === 10 ? 'See my result' : 'See result (' + count + '/10)';
+  }
   renderFriendSearch();
-  if (count === 10) {
-    renderFriendResult(hidden);
-    if (!friendResultShown) {
-      friendResultShown = true;
-      document.getElementById('friend-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
-    }
-  } else {
+  if (count < 10) {
     friendResultShown = false;
     document.getElementById('friend-result').textContent = '';
   }
@@ -1487,7 +1527,6 @@ function resetFriendTest() {
   friendOrder = 0;
   friendResultShown = false;
   document.getElementById('friend-name').value = '';
-  document.getElementById('friend-search').value = '';
   document.getElementById('friend-result').textContent = '';
   updateFriendStyleChips();
   updateFriendTest();
@@ -1668,7 +1707,7 @@ function showPicks(songs) {
       });
 
       const styleCandidates = selectedStyles.size
-        ? candidates.filter(candidate => selectedStyles.has(candidate.song.style))
+        ? candidates.filter(candidate => selectedStyles.has(styleGroup(candidate.song.style || 'other')))
         : [];
       if (!taste && selectedStyles.size && styleCandidates.length) {
         const styleMean = engineMean(centered, styleCandidates.map(candidate => candidate.index));
@@ -1909,7 +1948,12 @@ document.getElementById('card-search').addEventListener('input', () => {
   queueLibrarySearch();
 });
 
-document.getElementById('friend-search').addEventListener('input', renderFriendSearch);
+document.getElementById('friend-submit').addEventListener('click', () => {
+  if (friendRatings.size !== 10) return;
+  renderFriendResult(friendHiddenEntries());
+  friendResultShown = true;
+  document.getElementById('friend-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+});
 document.getElementById('friend-name').addEventListener('input', () => {
   if (friendRatings.size === 10) renderFriendResult(friendHiddenEntries());
 });
