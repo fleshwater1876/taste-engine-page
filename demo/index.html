@@ -53,14 +53,45 @@
   #friend-result { margin-top:10px; }
   #friend-result h3 { font-size:17px; margin:8px 0 2px; }
   .friend-hit { font-size:22px; font-weight:700; margin:8px 0 2px; }
-  .friend-compare { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0 2px; }
-  .friend-compare > div { background:#fbfaf7; border:1px solid #e6dfd4; border-radius:10px; padding:8px 10px; }
-  .friend-compare span { display:block; color:var(--muted); font-size:11px; line-height:1.25; }
-  .friend-compare strong { display:block; font-size:18px; margin-top:2px; }
+  .friend-before { background:#fff7ef; border:1px solid #f0dcc6; border-radius:12px; padding:12px 14px; margin:12px 0; }
+  .friend-before strong { display:block; font-size:15px; margin-bottom:6px; }
+  .friend-before ol { margin:0; padding-left:20px; font-size:14px; line-height:1.45; }
+  .friend-before li { margin:4px 0; }
+  .friend-rows { display:grid; gap:6px; margin:10px 0 2px; }
+  .friend-row { display:grid; grid-template-columns:minmax(0,1fr) auto 64px; align-items:center; gap:12px;
+    background:#fbfaf7; border:1px solid #e6dfd4; border-radius:12px; padding:12px 14px; }
+  .friend-row.no-circles { grid-template-columns:minmax(0,1fr) 64px; }
+  .friend-row .row-name { font-size:15px; }
+  .friend-row .row-value { font-size:20px; text-align:right; }
+  .friend-row .row-note { grid-column:1 / -1; font-size:13px; color:var(--muted); margin-top:-2px; }
+  .circles { display:flex; gap:6px; }
+  .circle { width:24px; height:24px; border-radius:50%; border:2px solid #cfc7bb; background:#fff; }
+  .circle.engine { border-color:#e07b3c; }
+  .friend-map { margin:14px 0 4px; }
+  .friend-map-title { font-weight:600; font-size:15px; margin-bottom:6px; }
+  .friend-map svg { width:100%; max-width:340px; height:auto; display:block; background:#fff;
+    border:1px solid #e6dfd4; border-radius:12px; }
+  .friend-map-legend { display:flex; flex-wrap:wrap; gap:4px 14px; font-size:12px; color:var(--muted); margin-top:6px; }
+  .friend-map-legend span { white-space:nowrap; }
+  .friend-map-legend i { display:inline-block; width:10px; height:10px; margin:0 5px 0 0; vertical-align:-1px; }
+  .friend-map-legend i.dot { border-radius:50%; background:#c9c2b6; }
+  .friend-map-legend i.liked { border-radius:50%; background:#e07b3c; }
+  .friend-map-legend i.hidden { color:#2b6cb0; font-style:normal; width:auto; font-size:13px; line-height:10px; }
+  .friend-map-legend i.pick { border-radius:50%; border:2px solid #d64545; background:none; }
+  .friend-badge { display:inline-block; margin-top:8px; background:#e9f7ec; color:#1e7a34; border:1px solid #b7e0bf;
+    border-radius:999px; padding:6px 12px; font-size:13px; font-weight:600; }
   .friend-hidden { margin-top:14px; border-top:1px solid #e6dfd4; padding-top:12px; }
   .friend-hidden h4, .friend-picks-title { font-size:15px; margin:14px 0 4px; }
+  .friend-hidden ul { grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
   .friend-hidden .pick { background:#fbfaf7; }
   .friend-hidden .rating { margin-left:0; min-width:0; }
+  .cover-wrap { position:relative; margin-bottom:6px; }
+  .cover { width:100%; aspect-ratio:1; border-radius:8px; object-fit:cover; display:block; background:#efe7da; }
+  .cover.none { display:flex; align-items:center; justify-content:center; font-size:30px; color:#9c9284; background:#e7ded0; }
+  .cover-badge { position:absolute; top:6px; right:6px; width:24px; height:24px; border-radius:50%; display:flex;
+    align-items:center; justify-content:center; font-size:14px; font-weight:700; color:#fff; }
+  .cover-badge.found { background:#2f9e44; }
+  .cover-badge.missing { background:#8c8377; }
   .friend-status-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:6px; }
   .friend-status { font-size:12px; font-weight:600; border-radius:999px; padding:2px 9px; }
   .friend-status.found { background:#e8f5e9; color:#1b5e20; }
@@ -95,6 +126,7 @@
   .star { background:none; border:0; padding:2px 3px; font-size:22px; line-height:1; cursor:pointer; color:#cfc7bb; }
   .star.on { color:var(--accent); }
   .star:hover { color:#e07b3c; }
+  .star:disabled { opacity:.45; cursor:default; color:#cfc7bb; }
   .rating { margin-left:8px; font-size:13px; color:var(--muted); min-width:64px; }
   .get-row { margin-top:16px; }
   .find { display:flex; gap:8px; margin:6px 0 4px; }
@@ -131,7 +163,7 @@
   .song-meta { color:var(--muted); font-size:12px; }
   @media (max-width: 640px) {
     .steps { grid-template-columns:1fr; }
-    #list ul, #library-list ul, #friend-results ul { grid-template-columns:1fr; }
+    #list ul, #library-list ul, #friend-results ul, .friend-hidden ul { grid-template-columns:1fr; }
     .map-scroll svg { min-width:760px; }
     #map-section .sub { font-size:13px; }
   }
@@ -159,6 +191,14 @@
   <section id="friend-section">
     <h2>Does it know your taste?</h2>
     <div class="sub"><strong>Rate 10 songs</strong>. The page hides your 3 favourites, recommends 5, then tells you how many of the 3 it found — 3/3 means it knows your taste. Nothing is saved on a server.</div>
+    <div class="friend-before">
+      <strong>Before you start:</strong>
+      <ol>
+        <li>Pick 1–2 styles you really like with the style chips.</li>
+        <li>Rate 10 songs. Give at least 3 songs 4–5 stars.</li>
+        <li>Press See my results, then Copy result and send the line to Adiya.</li>
+      </ol>
+    </div>
     <div class="friend-box">
       <div class="friend-top">
         <div class="friend-name">
@@ -309,6 +349,8 @@ function randomRank(song) {
 }
 const selectedStyles = new Set();
 const mapCircles = new Map();
+let mapSvg = null;
+let mapProject = null;
 let librarySearchTimer = null;
 let librarySearchToken = 0;
 const friendRatings = new Map();
@@ -1251,6 +1293,12 @@ function renderFriendSearch() {
     note.textContent = 'Loading the library...';
     return;
   }
+  const chips = document.getElementById('friend-styles');
+  if (chips) chips.style.display = friendRatings.size >= 10 ? 'none' : '';
+  if (friendRatings.size >= 10) {
+    note.textContent = '10 songs rated — press See my results.';
+    return;
+  }
   const hiddenIds = new Set(friendHiddenEntries().map(entry => entry.song.id));
   const matches = friendData.songs
     .filter(song => song.source !== 'mine')
@@ -1304,12 +1352,10 @@ function renderFriendSearch() {
       const btn = el('button', 'star', '★');
       btn.type = 'button';
       btn.classList.toggle('on', Boolean(rating) && value <= rating.rating);
+      if (friendRatings.size >= 10) btn.disabled = true;
       btn.setAttribute('aria-label', 'Rate ' + song.title + ' ' + value + ' out of 5');
       btn.addEventListener('click', () => {
-        if (!friendRatings.has(song.id) && friendRatings.size >= 10) {
-          note.textContent = 'You already rated 10 songs. Change a star or press Start over.';
-          return;
-        }
+        if (friendRatings.size >= 10) return;
         const existing = friendRatings.get(song.id);
         if (!existing) friendOrder += 1;
         friendRatings.set(song.id, {
@@ -1350,6 +1396,131 @@ function renderFriendSearch() {
     ul.appendChild(li);
   });
   list.appendChild(ul);
+}
+
+const coverCache = new Map();
+function appleTrackId(song) {
+  const link = song.apple || '';
+  const match = link.match(/[?&]i=(\d+)/);
+  return match ? match[1] : '';
+}
+function coverFor(song) {
+  const id = appleTrackId(song);
+  if (!id) return Promise.resolve('');
+  if (coverCache.has(id)) return coverCache.get(id);
+  const request = fetch('https://itunes.apple.com/lookup?id=' + id)
+    .then(response => response.ok ? response.json() : null)
+    .then(data => {
+      const url = data && data.results && data.results[0] && data.results[0].artworkUrl100;
+      return url ? url.replace('100x100', '300x300') : '';
+    })
+    .catch(() => '');
+  coverCache.set(id, request);
+  return request;
+}
+function coverCard(song, wasFound) {
+  const wrap = el('div', 'cover-wrap');
+  const placeholder = el('div', 'cover none', '♪');
+  wrap.appendChild(placeholder);
+  wrap.appendChild(el('span', 'cover-badge ' + (wasFound ? 'found' : 'missing'), wasFound ? '✓' : '✕'));
+  coverFor(song).then(url => {
+    if (!url) return;
+    const img = el('img', 'cover');
+    img.alt = song.title + ' cover';
+    img.src = url;
+    wrap.replaceChild(img, placeholder);
+  });
+  return wrap;
+}
+
+function randomNote(value) {
+  if (!value) return 'never in 1000 picks';
+  if (value >= 1) return 'more than 1 time per try';
+  return 'about 1 time in ' + Math.round(1 / value);
+}
+
+function compareRow(label, value, valueText, noteText, isEngine, showCircles = true) {
+  const row = el('div', 'friend-row' + (showCircles ? '' : ' no-circles'));
+  row.appendChild(el('span', 'row-name', label));
+  if (!showCircles) {
+    row.appendChild(el('strong', 'row-value', valueText));
+    if (noteText) row.appendChild(el('span', 'row-note', noteText));
+    return row;
+  }
+  const circles = el('span', 'circles');
+  for (let k = 0; k < 3; k++) {
+    const circle = el('span', 'circle' + (isEngine ? ' engine' : ''));
+    const part = Math.max(0, Math.min(1, value - k));
+    if (part > 0) {
+      circle.style.background = 'linear-gradient(to right, ' + (isEngine ? '#e07b3c' : '#b9b0a3') + ' ' +
+        (part * 100).toFixed(0) + '%, #fff ' + (part * 100).toFixed(0) + '%)';
+    }
+    circles.appendChild(circle);
+  }
+  row.appendChild(circles);
+  row.appendChild(el('strong', 'row-value', valueText));
+  if (noteText) row.appendChild(el('span', 'row-note', noteText));
+  return row;
+}
+
+function friendMap(hidden, visible, picks) {
+  const NS = 'http://www.w3.org/2000/svg';
+  const box = el('div', 'friend-map');
+  box.appendChild(el('div', 'friend-map-title', 'Why? Your music map'));
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', '0 0 100 100');
+  svg.setAttribute('role', 'img');
+  svg.setAttribute('aria-label', 'All songs as grey dots, the liked songs orange, the hidden 3 as blue stars, the 5 picks as red rings');
+  const at = (node, song, r) => {
+    node.setAttribute('cx', (song.xy[0] * 100).toFixed(2));
+    node.setAttribute('cy', ((1 - song.xy[1]) * 100).toFixed(2));
+    if (r) node.setAttribute('r', r);
+    return node;
+  };
+  const songs = (friendData ? friendData.songs : []).filter(song => Array.isArray(song.xy));
+  songs.forEach(song => {
+    const dot = document.createElementNS(NS, 'circle');
+    at(dot, song, '0.9');
+    dot.setAttribute('fill', '#c9c2b6');
+    svg.appendChild(dot);
+  });
+  (visible || []).filter(entry => entry.rating >= 4).forEach(entry => {
+    const dot = document.createElementNS(NS, 'circle');
+    at(dot, entry.song, '1.3');
+    dot.setAttribute('fill', '#e07b3c');
+    svg.appendChild(dot);
+  });
+  (picks || []).forEach(song => {
+    const ring = document.createElementNS(NS, 'circle');
+    at(ring, song, '1.9');
+    ring.setAttribute('fill', 'none');
+    ring.setAttribute('stroke', '#d64545');
+    ring.setAttribute('stroke-width', '0.7');
+    svg.appendChild(ring);
+  });
+  (hidden || []).forEach(entry => {
+    const star = document.createElementNS(NS, 'text');
+    star.setAttribute('x', (entry.song.xy[0] * 100).toFixed(2));
+    star.setAttribute('y', ((1 - entry.song.xy[1]) * 100 + 1.1).toFixed(2));
+    star.setAttribute('text-anchor', 'middle');
+    star.setAttribute('font-size', '3.6');
+    star.setAttribute('fill', '#2b6cb0');
+    star.textContent = '\u2605';
+    svg.appendChild(star);
+  });
+  box.appendChild(svg);
+  const legend = el('div', 'friend-map-legend');
+  [['dot', 'all songs (' + songs.length + ')'],
+   ['liked', 'you liked (4–5★)'],
+   ['hidden', 'hidden 3'],
+   ['pick', '5 picks']].forEach(([cls, text]) => {
+    const item = el('span');
+    item.appendChild(el('i', cls, cls === 'hidden' ? '\u2605' : ''));
+    item.appendChild(document.createTextNode(text));
+    legend.appendChild(item);
+  });
+  box.appendChild(legend);
+  return box;
 }
 
 function renderFriendResult(hidden) {
@@ -1402,28 +1573,50 @@ function renderFriendResult(hidden) {
     if (index === undefined) return;
     candidates.push({ song, index });
   });
-  const chosen = candidates
+  const ranked = candidates
     .map(candidate => ({ ...candidate, score: dotProduct(friendCentered[candidate.index], taste) }))
-    .sort((a, b) => b.score - a.score || a.song.title.localeCompare(b.song.title))
-    .slice(0, 5);
+    .sort((a, b) => b.score - a.score || a.song.title.localeCompare(b.song.title));
+  const likedStyles = new Set(
+    visible.filter(entry => entry.rating >= 4).map(entry => entry.song.style || '')
+  );
+  likedStyles.delete('');
+  const inStyles = ranked.filter(candidate => likedStyles.has(candidate.song.style || ''));
+  const otherStyles = ranked.filter(candidate => !likedStyles.has(candidate.song.style || ''));
+  const chosen = inStyles.slice(0, 5).concat(otherStyles.slice(0, Math.max(0, 5 - inStyles.length))).slice(0, 5);
   const found = chosen.filter(candidate => hiddenIds.has(candidate.song.id)).length;
   const styleAverage = friendStyleBaseline(visible, candidates, hiddenIds);
   const libraryAverage = candidates.length ? 15 / candidates.length : 0;
   const friendLabel = document.getElementById('friend-name').value.trim() || 'Friend';
   result.appendChild(el('h3', '', friendLabel + ' — result'));
   result.appendChild(el('div', 'friend-hit', 'Found ' + found + '/3 hidden songs in the 5 picks.'));
-  const compare = el('div', 'friend-compare');
-  [
-    ['My taste engine', found + '/3'],
-    ['Random from their styles', styleAverage === null ? 'n/a' : styleAverage.toFixed(2)],
-    ['Random from library', libraryAverage.toFixed(2)]
-  ].forEach(([label, value]) => {
-    const box = el('div');
-    box.appendChild(el('span', '', label));
-    box.appendChild(el('strong', '', value));
-    compare.appendChild(box);
-  });
-  result.appendChild(compare);
+  const rows = el('div', 'friend-rows');
+  const showCircles = true;
+  rows.appendChild(compareRow('My taste engine', found, found + '/3', '', true, showCircles));
+  rows.appendChild(compareRow('Random from their styles',
+    styleAverage === null ? 0 : styleAverage,
+    styleAverage === null ? 'n/a' : styleAverage.toFixed(2),
+    styleAverage === null ? '' : randomNote(styleAverage), false, showCircles));
+  rows.appendChild(compareRow('Random from library', libraryAverage,
+    libraryAverage.toFixed(2), randomNote(libraryAverage), false, showCircles));
+  result.appendChild(rows);
+  if (!found) result.appendChild(friendMap(hidden, visible, chosen.map(candidate => candidate.song)));
+  if (found > 0) {
+    const parts = [];
+    if (styleAverage) {
+      const x = found / styleAverage;
+      parts.push(x >= 1 ? x.toFixed(1) + '× better than same-style random'
+        : x.toFixed(1) + '× as often as same-style random');
+    }
+    if (libraryAverage) {
+      const y = found / libraryAverage;
+      parts.push(y >= 1 ? y.toFixed(1) + '× better than random'
+        : y.toFixed(1) + '× as often as random');
+    }
+    if (parts.length) result.appendChild(el('div', 'friend-badge', parts.join(' · ')));
+  }
+  if (likedStyles.size) {
+    result.appendChild(el('div', 'outside-note', 'Picks from your styles: ' + [...likedStyles].join(', ')));
+  }
   const copyRow = el('div', 'friend-status-row');
   const copyButton = el('button', 'reset', 'Copy result');
   copyButton.type = 'button';
@@ -1446,6 +1639,7 @@ function renderFriendResult(hidden) {
   hidden.forEach(entry => {
     const song = entry.song;
     const li = el('li', 'pick');
+    li.appendChild(coverCard(song, chosen.some(candidate => candidate.song.id === song.id)));
     li.appendChild(el('div', 'title', song.title));
     const meta = [song.artist, song.style].filter(Boolean).join(' · ');
     if (meta) li.appendChild(el('div', 'meta', meta));
@@ -1507,12 +1701,12 @@ function updateFriendTest() {
         : 'Your taste test: ' + count + '/10 — keep rating ↓';
   }
   document.getElementById('friend-progress').textContent = count === 10
-    ? '10/10 rated — press See result'
+    ? '10/10 rated — press See my results'
     : count + '/10 rated · ' + (10 - count) + ' to go';
   const submit = document.getElementById('friend-submit');
   if (submit) {
     submit.disabled = count !== 10;
-    submit.textContent = count === 10 ? 'See my result' : 'See result (' + count + '/10)';
+    submit.textContent = count === 10 ? 'See my results' : 'See result (' + count + '/10)';
   }
   renderFriendSearch();
   if (count < 10) {
@@ -1835,6 +2029,11 @@ function drawCatalogMap() {
       const height = 600;
       const ns = 'http://www.w3.org/2000/svg';
       const svg = document.createElementNS(ns, 'svg');
+      mapSvg = svg;
+      mapProject = xy => ({
+        cx: 30 + xy[0] * (width - 60),
+        cy: 30 + xy[1] * (height - 60)
+      });
       svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
       svg.setAttribute('role', 'img');
       svg.setAttribute('aria-label', 'Map of ' + songs.length + ' songs colored by style');
@@ -1853,8 +2052,9 @@ function drawCatalogMap() {
       songs.forEach(song => {
         const style = song.style || 'other';
         presentStyles.add(style);
-        const cx = String(30 + song.xy[0] * (width - 60));
-        const cy = String(30 + song.xy[1] * (height - 60));
+        const spot = mapProject(song.xy);
+        const cx = String(spot.cx);
+        const cy = String(spot.cy);
         const group = document.createElementNS(ns, 'g');
         group.setAttribute('class', 'song-dot');
         group.dataset.id = song.id;
