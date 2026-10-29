@@ -1,0 +1,250 @@
+<!doctype html>
+<!-- Project page template for the FRP 2026 taste engine (Adiya). NOT FILLED YET.
+     Every [ ... ] is a place to write. Grey hints in small text tell you what to write: delete them when done.
+     Numbers: ONLY numbers you really measured (results.md, your paper). Not measured? Delete that line. Never invent.
+     Public page: no audio files, no real friend names (Friend A, B, C), no keys.
+     Pictures: replace images/*.svg with your own pictures (same names, or change the src). -->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taste Engine — FRP 2026</title>
+<meta name="description" content="A small music recommender: rate five songs, get five new ones that sound alike, each with one reason.">
+<link rel="icon" href="images/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<nav class="top">
+  <div class="wrap top-in">
+    <a class="brand" href="#">♪ Taste Engine</a>
+    <div class="top-links"><a href="#demo">Demo</a><a href="paper.pdf">Paper</a></div>
+  </div>
+</nav>
+
+<header class="hero wrap">
+  <div class="eyebrow">FRP 2026 <span>/</span> AI Engineering <span>/</span> Research</div>
+  <h1>Taste Engine</h1>
+  <p class="subtitle">Five songs you rate 5★ in. Five new songs that sound like them out.</p>
+  <p class="authors"><a href="#">Adiya</a></p>
+  <p class="aff">FRP 2026, AI Engineering track · ISSAI, Nazarbayev University</p>
+  <div class="buttons">
+    <a class="pill" href="paper.pdf">📄 Paper</a>
+    <a class="pill" href="demo/">▶ Live demo</a>
+    <a class="pill" href="#results">📊 Results</a>
+    <a class="pill light" href="#bibtex">{ } BibTeX</a>
+  </div>
+  <p class="tagline">Rate what you love, press Get, and see songs that sound like it — with the reason written next to each one.</p>
+
+  <figure class="teaser">
+    <img src="images/teaser.svg" alt="Your rated songs, the song library and five new picks with reasons">
+    <figcaption>The five songs you rated 5★ are compared with every song in the library; the five closest ones come back, each next to the liked song it is close to.</figcaption>
+  </figure>
+
+  <div class="stats">
+    <div><b>319</b><span>songs in the library</span></div>
+    <div><b>3</b><span>real friends tested</span></div>
+    <div><b>6 of 9</b><span>hidden favourites found</span></div>
+    <div><b>20</b><span>styles in the library</span></div>
+  </div>
+</header>
+
+<div class="tabs" id="tabs">
+  <div class="wrap tabs-in">
+    <a href="#abstract">Abstract</a><a href="#how">How it works</a><a href="#data">Songs</a><a href="#tests">Tests</a>
+    <a href="#results">Results</a><a href="#demo">Demo</a><a href="#limits">Limitations</a><a href="#bibtex">BibTeX</a>
+  </div>
+</div>
+
+<section id="abstract" class="band">
+  <div class="narrow">
+    <h2>Abstract</h2>
+    <p>Music apps recommend from what millions of other people listen to, not from what you hear, so a listener with no history gets popular songs instead of personal ones. With one listener and a small library there is no other people's data to use at all.</p>
+    <p>I built a taste engine that compares songs by sound: every track becomes a vector with CLAP audio embeddings, your 1–5★ ratings become one taste profile, and the five closest unrated songs come back with the title of the liked song behind each pick. The library holds 319 songs in 20 styles, every one with descriptive tags.</p>
+    <p>I tested it two ways: two fixed profiles (a rock fan and a K-pop fan) to see if the picks stay in the right style, and three friends who hid three real favourites each in the unseen songs. In the friend test 6 of 9 hidden favourites came back in the top 5, where random picks would find about 0.15 of 9.</p>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <h2>[How it works: a short title]</h2>
+    <p class="lead">[One line: the idea of the method]</p>
+    <figure class="wide">
+      <img src="images/overview.svg" alt="[Overview diagram]">
+      <figcaption>[Caption: song → numbers → taste → 5 new songs]</figcaption>
+    </figure>
+    <div class="cols3">
+      <div class="col"><div class="num">01</div><h3>[Listen]</h3><p>[How a song becomes numbers.]</p></div>
+      <div class="col"><div class="num">02</div><h3>[Your taste]</h3><p>[How your ratings become one taste.]</p></div>
+      <div class="col"><div class="num">03</div><h3>[New songs]</h3><p>[How the 5 songs are chosen, and the reason "because you liked".]</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="data" class="band">
+  <div class="wrap">
+    <h2>[N] songs. [N] styles.</h2>
+    <p class="lead">[Where the songs come from, in one line. No audio files on this page.]</p>
+    <div class="grid2">
+      <div class="cat"><span class="ic">A</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
+      <div class="cat"><span class="ic">B</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
+      <div class="cat"><span class="ic">C</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
+      <div class="cat"><span class="ic">D</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
+      <div class="cat"><span class="ic">E</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
+      <div class="cat"><span class="ic">♪</span><div><h4>[My own songs]</h4><p>[Your taste: which styles]</p></div><em>[N] songs</em></div>
+    </div>
+    <p class="note">[One line about the data, for example where the style labels come from.]</p>
+  </div>
+</section>
+
+<section id="tests">
+  <div class="wrap">
+    <h2>[How we test it]</h2>
+    <p class="lead">[One line: we compare with a baseline, so the numbers mean something.]</p>
+    <div class="cols3">
+      <div class="col"><div class="num">TEST 1</div><h3>[Does it hear the style?]</h3><p>[What you measure and the baseline.]</p></div>
+      <div class="col"><div class="num">TEST 2</div><h3>[Friend test]</h3><p>[Hide 3 favourites, find them again. The baselines.]</p></div>
+      <div class="col"><div class="num">TEST 3</div><h3>[Browser = GPU?]</h3><p>[The model in the page gives the same numbers as Python.]</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="results" class="band">
+  <div class="wrap">
+    <h2>[Results: the main message in a few words]</h2>
+    <p class="lead">[One line about what the numbers show.]</p>
+    <div class="keys">
+      <div><b>[X]</b><span>[what this number is]</span></div>
+      <div><b>[X]</b><span>[what this number is]</span></div>
+      <div><b>[X]</b><span>[what this number is]</span></div>
+    </div>
+
+    <div class="chart" id="chart" aria-label="Bar chart">
+      <div class="chart-title">[Chart title, for example: hidden favourites found per friend (of 3)]</div>
+      <!-- the bars are made from CHART at the bottom of this file -->
+    </div>
+
+    <div class="tablewrap">
+      <div class="table-cap">[Table title: the friend test, date]</div>
+      <table>
+        <thead><tr><th>Friend</th><th>Found (of 3)</th><th>Random from their styles</th><th>Random from the library</th></tr></thead>
+        <tbody>
+          <tr><td>Friend A</td><td class="x">[ ]</td><td>[ ]</td><td>[ ]</td></tr>
+          <tr><td>Friend B</td><td class="x">[ ]</td><td>[ ]</td><td>[ ]</td></tr>
+          <tr><td>Friend C</td><td class="x">[ ]</td><td>[ ]</td><td>[ ]</td></tr>
+          <tr class="total"><td>All</td><td class="x">[X of Y]</td><td>[ ]</td><td>[ ]</td></tr>
+        </tbody>
+      </table>
+      <p class="note">[How each column is computed, in one line.]</p>
+    </div>
+
+    <div class="cols3">
+      <div class="col"><div class="num">01</div><h3>[Found]</h3><p>[What "found" means.]</p></div>
+      <div class="col"><div class="num">02</div><h3>[Random from their styles]</h3><p>[The hard baseline.]</p></div>
+      <div class="col"><div class="num">03</div><h3>[Random from the library]</h3><p>[The easy baseline: 5 × 3 / pool size.]</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="demo">
+  <div class="wrap">
+    <h2>[Look inside: example picks]</h2>
+    <p class="lead">[One line: the same engine, different tastes.]</p>
+    <div class="case-tabs" role="tablist">
+      <button class="on" data-case="0">01 [Rock fan]</button>
+      <button data-case="1">02 [K-pop fan]</button>
+      <button data-case="2">03 [My taste]</button>
+    </div>
+    <div class="case">
+      <div class="case-panel on"><h3>[Question this example answers]</h3><p>[2 lines: which songs were liked, which 5 came out, why it is interesting.]</p><img src="images/case1.svg" alt="[screenshot]"></div>
+      <div class="case-panel"><h3>[Question this example answers]</h3><p>[2 lines]</p><img src="images/case2.svg" alt="[screenshot]"></div>
+      <div class="case-panel"><h3>[Question this example answers]</h3><p>[2 lines]</p><img src="images/case3.svg" alt="[screenshot]"></div>
+    </div>
+    <div class="demo-box">
+      <div><h3>Try it yourself</h3><p>[Rate a few songs, press Get, or do the friend test. Works on a phone.]</p></div>
+      <a class="pill" href="demo/">▶ Open the live demo</a>
+    </div>
+  </div>
+</section>
+
+<section id="limits" class="band">
+  <div class="narrow">
+    <h2>Reading the results</h2>
+    <p>[Limitations, honestly: how many friends, 30-second previews, where the style labels come from, …]</p>
+    <p>[What the numbers do NOT show.]</p>
+  </div>
+</section>
+
+<section id="next">
+  <div class="wrap">
+    <h2>[Try, check, build on it]</h2>
+    <div class="cols3">
+      <div class="col"><div class="num">01</div><h3>[Try the demo]</h3><p>[One line]</p></div>
+      <div class="col"><div class="num">02</div><h3>[Read the paper]</h3><p>[One line]</p></div>
+      <div class="col"><div class="num">03</div><h3>[What is next]</h3><p>[One line: your next idea]</p></div>
+    </div>
+    <div class="buttons center"><a class="pill" href="demo/">Live demo</a><a class="pill light" href="paper.pdf">Paper (PDF)</a></div>
+  </div>
+</section>
+
+<section id="bibtex" class="band">
+  <div class="narrow">
+    <div class="bib-head"><h2>BibTeX</h2><button id="copy">Copy citation</button></div>
+<pre id="bib">@misc{[yourname]2026tasteengine,
+  title  = {[Project name]: [Subtitle]},
+  author = {[Your first name]},
+  year   = {2026},
+  note   = {FRP 2026, AI Engineering track, ISSAI, Nazarbayev University},
+  url    = {https://[your-github-name].github.io/[repository]/}
+}</pre>
+  </div>
+</section>
+
+<footer>
+  <b>[Project name]</b>
+  <p>FRP 2026 · ISSAI, Nazarbayev University</p>
+  <p class="small">Layout inspired by the Academic Project Page Template and Nerfies.</p>
+</footer>
+
+<script>
+// The bar chart: put your numbers here (value = average found per friend, of 3). null = not measured yet (shows X).
+const CHART = [
+  { label: "[My taste engine]", value: null, color: "#A3283D" },
+  { label: "[Random from their styles]", value: null, color: "#F09A4A" },
+  { label: "[Random from the library]", value: null, color: "#9AA3AE" },
+];
+const MAX = 3;
+const chart = document.getElementById("chart");
+CHART.forEach(row => {
+  const r = document.createElement("div"); r.className = "bar-row";
+  const w = row.value === null ? 0 : Math.max(1, 100 * row.value / MAX);
+  r.innerHTML = `<span class="bar-label">${row.label}</span>
+    <span class="bar-track"><span class="bar" style="width:${w}%;background:${row.color}"></span></span>
+    <span class="bar-val">${row.value === null ? "X" : row.value}</span>`;
+  chart.appendChild(r);
+});
+
+// Example tabs
+document.querySelectorAll(".case-tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".case-tabs button").forEach(x => x.classList.toggle("on", x === b));
+  document.querySelectorAll(".case-panel").forEach((p, i) => p.classList.toggle("on", i == b.dataset.case));
+});
+
+// Copy citation
+document.getElementById("copy").onclick = async e => {
+  try { await navigator.clipboard.writeText(document.getElementById("bib").innerText); e.target.textContent = "Copied ✓"; }
+  catch { e.target.textContent = "Select and copy"; }
+};
+
+// Highlight the section in the menu while you scroll
+const links = [...document.querySelectorAll(".tabs a")];
+const io = new IntersectionObserver(es => es.forEach(en => {
+  if (en.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + en.target.id));
+}), { rootMargin: "-45% 0px -50% 0px" });
+document.querySelectorAll("section[id]").forEach(s => io.observe(s));
+</script>
+</body>
+</html>

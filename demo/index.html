@@ -1,0 +1,1948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Taste Engine</title>
+<style>
+  :root { --bg:#f6f4ef; --ink:#1d1b18; --muted:#6b645c; --card:#fff; --accent:#c2410c; }
+  * { box-sizing: border-box; }
+  body { margin:0; font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, sans-serif; background:var(--bg); color:var(--ink); }
+  header { padding:28px 20px 10px; max-width:760px; margin:0 auto; }
+  h1 { margin:0 0 4px; font-size:26px; letter-spacing:-0.5px; }
+  .sub { color:var(--muted); font-size:14px; }
+  .friend-jump { display:inline-block; margin-top:8px; color:var(--accent); font-size:13px; font-weight:600; }
+  .steps { counter-reset:step; list-style:none; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; margin:0 0 16px; padding:0; }
+  .steps li { position:relative; background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:12px 14px 12px 46px; color:var(--muted); font-size:13px; }
+  .steps li::before { counter-increment:step; content:counter(step); position:absolute; left:12px; top:12px; width:24px; height:24px; border-radius:50%; background:var(--accent); color:#fff; font:600 13px/24px system-ui, -apple-system, Segoe UI, Roboto, sans-serif; text-align:center; }
+  .steps strong { display:block; color:var(--ink); font-size:14px; margin-bottom:2px; }
+  .list-top { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  .card-search { margin-top:12px; }
+  .card-search input { width:100%; border:1px solid #cfc7bb; background:var(--card); border-radius:10px; padding:10px 12px; font:inherit; }
+  .card-search input:focus { outline:2px solid #e07b3c; outline-offset:1px; }
+  #style-section { margin:0 0 14px; }
+  #style-section h2 { font-size:18px; margin:0 0 2px; }
+  .style-picker { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+  .style-chip { background:var(--card); border:1px solid #cfc7bb; border-radius:999px; padding:6px 11px; font:inherit; font-size:13px; color:var(--ink); cursor:pointer; }
+  .style-chip:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+  .style-chip.on { background:var(--accent); border-color:var(--accent); color:#fff; }
+  .style-chip:disabled { opacity:0.45; cursor:default; }
+  .style-count { opacity:0.7; margin-left:6px; font-size:12px; }
+  #style-note { min-height:21px; }
+  #search-note { min-height:21px; }
+  #friend-section { margin-top:28px; }
+  #friend-section h2 { font-size:18px; margin:0 0 4px; }
+  .friend-box { background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:14px 16px; }
+  .friend-top { display:flex; flex-wrap:wrap; align-items:flex-end; justify-content:space-between; gap:10px; }
+  .friend-name { flex:1; min-width:180px; }
+  .friend-name label { display:block; color:var(--muted); font-size:12px; font-weight:600; margin-bottom:3px; }
+  .friend-input { width:100%; border:1px solid #cfc7bb; background:var(--card); border-radius:10px; padding:9px 12px; font:inherit; }
+  .friend-input:focus { outline:2px solid #e07b3c; outline-offset:1px; }
+  .friend-search { margin-top:10px; }
+  #friend-styles { margin-top:10px; }
+  #friend-note { min-height:21px; }
+  #friend-progress { min-height:21px; }
+  #friend-results ul { margin-top:10px; }
+  #friend-results .stars { margin-top:5px; }
+  #friend-results .star { font-size:19px; }
+  .friend-clear { background:none; border:0; color:var(--muted); font:inherit; font-size:12px; text-decoration:underline; cursor:pointer; padding:2px 4px; }
+  .friend-clear:hover { color:var(--accent); }
+  #friend-result { margin-top:10px; }
+  #friend-result h3 { font-size:17px; margin:8px 0 2px; }
+  .friend-hit { font-size:22px; font-weight:700; margin:8px 0 2px; }
+  .friend-compare { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; margin:10px 0 2px; }
+  .friend-compare > div { background:#fbfaf7; border:1px solid #e6dfd4; border-radius:10px; padding:8px 10px; }
+  .friend-compare span { display:block; color:var(--muted); font-size:11px; line-height:1.25; }
+  .friend-compare strong { display:block; font-size:18px; margin-top:2px; }
+  .friend-hidden { margin-top:14px; border-top:1px solid #e6dfd4; padding-top:12px; }
+  .friend-hidden h4, .friend-picks-title { font-size:15px; margin:14px 0 4px; }
+  .friend-hidden .pick { background:#fbfaf7; }
+  .friend-hidden .rating { margin-left:0; min-width:0; }
+  .friend-status-row { display:flex; flex-wrap:wrap; align-items:center; gap:8px; margin-top:6px; }
+  .friend-status { font-size:12px; font-weight:600; border-radius:999px; padding:2px 9px; }
+  .friend-status.found { background:#e8f5e9; color:#1b5e20; }
+  .friend-status.missing { background:#f1ece3; color:#6b645c; }
+  .reset { background:var(--card); color:var(--ink); border:1px solid #cfc7bb; border-radius:9px; padding:6px 12px; font:inherit; font-size:13px; font-weight:600; cursor:pointer; }
+  .reset:hover:not(:disabled) { border-color:var(--accent); color:var(--accent); }
+  .reset:disabled { opacity:0.5; cursor:default; }
+  main { max-width:760px; margin:0 auto; padding:12px 20px 60px; }
+  .empty { background:var(--card); border:1px dashed #cfc7bb; border-radius:14px; padding:22px; color:var(--muted); }
+  ul { list-style:none; margin:16px 0 0; padding:0; display:grid; gap:10px; }
+  li.song { background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:14px 16px; }
+  #list ul, #library-list ul { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+  .title { font-weight:650; }
+  .blurb { color:var(--muted); font-size:14px; margin:2px 0 8px; }
+  .tags { display:flex; flex-wrap:wrap; gap:6px; margin-bottom:8px; }
+  .tag { font-size:12px; background:#f1ece3; color:#5b534a; border-radius:999px; padding:2px 9px; }
+  .clip { margin:4px 0 8px; }
+  .clip audio { width:100%; height:34px; }
+  .actions { display:flex; align-items:center; gap:10px; margin:8px 0 2px; }
+  .save { display:inline-block; background:#1d1b18; color:#fff; text-decoration:none; border-radius:9px; padding:7px 12px; font-size:13px; font-weight:600; }
+  .save:hover { background:#3a3630; }
+  .similar h2 { font-size:18px; margin:24px 0 0; }
+  .similar .sub { margin-top:2px; }
+  .similar h3, .outside h3 { font-size:16px; margin:24px 0 0; }
+  .outside-note { color:var(--muted); font-size:13px; margin-top:2px; }
+  .warn { background:#fff4e6; border:1px solid #f0c9a8; color:#8a3a0f; border-radius:10px; padding:10px 12px; margin-top:10px; font-size:14px; }
+  .pick .meta { color:var(--muted); font-size:13px; margin-top:2px; }
+  .pick audio { width:100%; height:32px; margin-top:6px; }
+  .open { display:inline-block; margin-top:6px; font-size:13px; color:var(--accent); }
+  .stars { display:flex; align-items:center; gap:4px; }
+  .star { background:none; border:0; padding:2px 3px; font-size:22px; line-height:1; cursor:pointer; color:#cfc7bb; }
+  .star.on { color:var(--accent); }
+  .star:hover { color:#e07b3c; }
+  .rating { margin-left:8px; font-size:13px; color:var(--muted); min-width:64px; }
+  .get-row { margin-top:16px; }
+  .find { display:flex; gap:8px; margin:6px 0 4px; }
+  .find input { flex:1; min-width:0; border:1px solid #cfc7bb; background:var(--card); border-radius:10px; padding:10px 12px; font:inherit; }
+  .find input:focus { outline:2px solid #e07b3c; outline-offset:1px; }
+  #find-note { min-height:21px; }
+  .get { background:var(--accent); color:#fff; border:0; border-radius:10px; padding:10px 18px; font:inherit; font-weight:650; cursor:pointer; }
+  .get:hover { background:#9a3412; }
+  .picks h2 { font-size:18px; margin:22px 0 0; }
+  li.pick { background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:14px 16px; }
+  .reason { color:var(--muted); font-size:14px; margin-top:4px; }
+  #map-section { margin-top:28px; }
+  #map-section h2 { font-size:18px; margin:0 0 4px; }
+  #map { background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:10px; }
+  .map-scroll { overflow-x:auto; }
+  #map svg { display:block; width:100%; height:auto; background:#fbfaf7; border-radius:10px; }
+  #map circle { fill-opacity:0.8; }
+  #map circle.liked { fill:#f97316; stroke:#1d1b18; stroke-width:1.3; }
+  #map g.song-dot { cursor:pointer; }
+  .map-info { margin-top:8px; font-size:13px; color:var(--muted); min-height:20px; }
+  .map-legend { display:flex; flex-wrap:wrap; gap:6px 14px; margin-top:10px; font-size:12px; color:var(--muted); }
+  .legend-item { display:inline-flex; align-items:center; gap:5px; }
+  .legend-swatch { width:10px; height:10px; border-radius:50%; display:inline-block; }
+  .legend-swatch.liked-swatch { background:#f97316; border:1px solid #1d1b18; }
+  #results-section, #clap-section { margin-top:28px; }
+  #results-section h2, #clap-section h2 { font-size:18px; margin:0 0 4px; }
+  .results-wrap { background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:10px; overflow-x:auto; }
+  table.results { width:100%; border-collapse:collapse; font-size:13px; }
+  table.results th, table.results td { text-align:left; vertical-align:top; padding:8px; border-bottom:1px solid #eee7dc; }
+  table.results th { color:var(--muted); font-weight:600; }
+  table.results tr:last-child td { border-bottom:0; }
+  .result-hit { font-weight:650; white-space:nowrap; }
+  .result-note { margin-top:8px; font-size:13px; color:var(--muted); }
+  .song-meta { color:var(--muted); font-size:12px; }
+  @media (max-width: 640px) {
+    .steps { grid-template-columns:1fr; }
+    #list ul, #library-list ul { grid-template-columns:1fr; }
+    .map-scroll svg { min-width:760px; }
+    #map-section .sub { font-size:13px; }
+  }
+  #find, #find-note, #similar { display:none; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Taste Engine</h1>
+  <div class="sub">Rate songs 1–5, then press Get 5 new songs beyond your list. Play a 30-second clip too. Ratings stay in this browser.</div>
+  <a id="friend-jump" class="friend-jump" href="#friend-section">Friend test: separate 10-song test ↓</a>
+</header>
+<main>
+  <ol class="steps" aria-label="How to use this page">
+    <li><strong>Rate 3+ songs</strong>Tap 1–5 stars on at least three of your songs.</li>
+    <li><strong>Get 5 new songs</strong>Press the orange button below your list.</li>
+    <li><strong>See why</strong>Each pick names the song you liked and its sound tags.</li>
+  </ol>
+  <section id="style-section">
+    <h2>Start with a style</h2>
+    <div class="sub">New here? Pick 1–3 styles. No ratings needed.</div>
+    <div id="style-picker" class="style-picker"><span class="outside-note">Loading styles...</span></div>
+    <div id="style-note" class="outside-note"></div>
+  </section>
+  <form id="find" class="find">
+    <input id="find-input" type="search" placeholder="Type a song title or artist" autocomplete="off" aria-label="Song title or artist">
+    <button class="get" type="submit">Find 5 similar</button>
+  </form>
+  <div id="find-note" class="sub"></div>
+  <div class="list-top">
+    <div id="summary" class="sub"></div>
+    <button id="reset" class="reset" type="button" title="Clear ratings and search" disabled>Reset</button>
+  </div>
+  <div class="card-search">
+    <input id="card-search" type="search" placeholder="Search your songs or the library" aria-label="Search your songs or the library" autocomplete="off">
+  </div>
+  <div id="search-note" class="outside-note"></div>
+  <div id="list"></div>
+  <div id="library-results" class="similar" hidden>
+    <h2>From the library</h2>
+    <div id="library-note" class="outside-note"></div>
+    <div id="library-list"></div>
+  </div>
+  <div id="similar" class="similar"></div>
+  <div class="get-row">
+    <button id="get" class="get" type="button">Get 5 new songs</button>
+  </div>
+  <div id="picks"></div>
+  <section id="friend-section">
+    <h2>Friend test</h2>
+    <div class="sub">A friend rates 10 different library songs. The page hides their top 3, uses the other 7 to recommend 5, and shows how many hidden songs were found. Nothing is saved on a server.</div>
+    <div class="friend-box">
+      <div class="friend-top">
+        <div class="friend-name">
+          <label for="friend-name">Friend name</label>
+          <input id="friend-name" class="friend-input" type="text" placeholder="Name" autocomplete="off">
+        </div>
+        <button id="friend-reset" class="reset" type="button">Start over</button>
+      </div>
+      <div class="friend-search">
+        <input id="friend-search" class="friend-input" type="search" placeholder="Search the library by song or artist" aria-label="Friend test: search the library" autocomplete="off">
+      </div>
+      <div id="friend-styles" class="style-picker"><span class="outside-note">Loading styles...</span></div>
+      <div id="friend-note" class="outside-note"></div>
+      <div id="friend-progress" class="sub"></div>
+      <div id="friend-result"></div>
+      <div id="friend-results"></div>
+    </div>
+  </section>
+  <section id="map-section">
+    <h2>Catalog map</h2>
+    <div class="sub">Each dot is one of 376 songs, placed by its CLAP sound. Color shows its style.</div>
+    <div id="map"><div class="empty">Loading map...</div></div>
+    <div id="map-info" class="map-info">Hover or tap a dot to see its song.</div>
+  </section>
+  <section id="results-section">
+    <h2>Test results</h2>
+    <div class="sub">Three friends; each hid 3 favourite songs. Found = hidden favourites in the top 5. Random picks = 5 picks × 3 hidden / 293 songs = 0.05 per friend; 0.15 total.</div>
+    <div class="results-wrap">
+      <table class="results">
+        <thead>
+          <tr><th>Friend</th><th>Found (of 3)</th><th>Random picks</th><th>Random from their styles</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Friend A</td>
+            <td class="result-hit">2/3</td>
+            <td>0.05</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>Friend B</td>
+            <td class="result-hit">3/3</td>
+            <td>0.05</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td>Friend C</td>
+            <td class="result-hit">1/3</td>
+            <td>0.05</td>
+            <td>-</td>
+          </tr>
+          <tr>
+            <td><strong>Total</strong></td>
+            <td class="result-hit">6/9</td>
+            <td>0.15</td>
+            <td>- of 9</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+  <section id="clap-section">
+    <h2>CLAP check: 3 songs</h2>
+    <div class="sub">Each 30-second clip becomes 512 numbers. 1.00 = the same sound; higher = more alike.</div>
+    <div class="results-wrap">
+      <table class="results">
+        <thead>
+          <tr><th>Song</th><th>Bloodhail</th><th>Sugar Hiccup</th><th>Earth Moon Transit</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Bloodhail<div class="song-meta">Have a Nice Life · shoegaze</div></td>
+            <td class="result-hit">1.00</td>
+            <td class="result-hit">0.92</td>
+            <td>0.76</td>
+          </tr>
+          <tr>
+            <td>Sugar Hiccup<div class="song-meta">Cocteau Twins · shoegaze</div></td>
+            <td class="result-hit">0.92</td>
+            <td class="result-hit">1.00</td>
+            <td>0.79</td>
+          </tr>
+          <tr>
+            <td>Earth Moon Transit<div class="song-meta">Duster · indie rock</div></td>
+            <td>0.76</td>
+            <td>0.79</td>
+            <td class="result-hit">1.00</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="result-note">The two shoegaze songs are closest (<strong>0.92</strong>). The indie rock song is related (<strong>0.76–0.79</strong>) but clearly different. CLAP compares sound, not the style label.</div>
+  </section>
+</main>
+<script>
+const STORE = 'taste-engine-ratings';
+let allSongs = [];
+let songVectors = {};
+let embeddingsError = '';
+const outsideCache = {};
+let engineCache = null;
+let engineLoading = null;
+const engineShown = new Set();
+const selectedStyles = new Set();
+const mapCircles = new Map();
+let librarySearchTimer = null;
+let librarySearchToken = 0;
+const friendRatings = new Map();
+let friendStyle = '';
+let friendOrder = 0;
+let friendData = null;
+let friendCentered = null;
+let friendIndexById = new Map();
+let friendResultShown = false;
+
+function parseCSV(text) {
+  const lines = text.split(/\r?\n/).filter(l => l.trim() !== '');
+  if (lines.length < 2) return [];
+  return lines.slice(1).map(line => {
+    const parts = line.split(',');
+    return {
+      title: (parts[0] || '').trim(),
+      blurb: (parts[1] || '').trim(),
+      tags: (parts[2] || '').trim(),
+      clip: (parts[3] || '').trim()
+    };
+  }).filter(s => s.title);
+}
+
+function clipURL(song) {
+  return 'data/' + (song.clip || '').split('/').map(encodeURIComponent).join('/');
+}
+
+function loadRatings() {
+  try { return JSON.parse(localStorage.getItem(STORE) || '{}'); }
+  catch (e) { return {}; }
+}
+
+function saveRatings(all) {
+  localStorage.setItem(STORE, JSON.stringify(all));
+}
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text !== undefined) n.textContent = text;
+  return n;
+}
+
+function paintStars(box, label, value) {
+  box.querySelectorAll('.star').forEach(btn => {
+    btn.classList.toggle('on', Number(btn.dataset.v) <= value);
+    btn.setAttribute('aria-pressed', String(Number(btn.dataset.v) <= value));
+  });
+  label.textContent = value ? value + ' of 5' : 'not rated';
+}
+
+function tagsOf(song) {
+  return (song.tags || '').split(';').map(t => t.trim().toLowerCase()).filter(Boolean);
+}
+
+function sharedTag(a, b) {
+  const other = new Set(tagsOf(b));
+  return tagsOf(a).find(tag => other.has(tag)) || '';
+}
+
+function preferredStyle(song) {
+  const tags = tagsOf(song);
+  const has = tag => tags.some(value => value.includes(tag));
+  if (has('city pop')) return 'city pop';
+  if (has('synthpop') || has('electronic')) return 'electronic';
+  if (has('j-pop')) return 'j-pop';
+  if (has('k-pop')) return 'k-pop';
+  if (has('rock')) return 'rock';
+  if (has('punk')) return 'punk';
+  if (has('metal')) return 'metal';
+  if (has('hip hop') || has('rap')) return 'hip hop';
+  if (has('r&b') || has('soul') || has('funk') || has('disco')) return 'r&b soul';
+  if (has('jazz')) return 'jazz';
+  if (has('classical')) return 'classical';
+  if (has('country')) return 'country';
+  if (has('latin')) return 'latin';
+  if (has('reggae')) return 'reggae';
+  if (has('folk')) return 'indie folk';
+  if (has('pop')) return 'pop';
+  return '';
+}
+
+function outsideSearchTerm(song) {
+  const tags = tagsOf(song);
+  const has = tag => tags.includes(tag);
+  if (has('rock') && has('rap')) return 'nu metal';
+  if (has('rock') && has('90s')) return 'grunge';
+  if (has('rock') && has('classic')) return 'classic rock';
+  if (has('rock')) return 'alternative rock';
+  if (has('city pop')) return 'city pop';
+  if (has('synthpop')) return 'synthpop';
+  if (has('k-pop')) return 'k-pop';
+  if (has('j-pop')) return 'j-pop';
+  if (has('pop') && has('dreamy')) return 'dream pop';
+  if (has('pop') && has('dark')) return 'electropop';
+  if (has('pop') && has('dance')) return 'dance pop';
+  if (has('pop')) return 'pop';
+  if (has('funk') && has('disco')) return 'disco funk';
+  if (has('funk') && has('soul')) return 'funk soul';
+  if (has('funk')) return 'funk';
+  if (has('soul')) return 'soul';
+  if (has('jazz')) return 'jazz';
+  if (has('folk')) return 'folk';
+  if (has('latin')) return 'latin';
+  return tags[0] || '';
+}
+
+function similarSongs(song, songs) {
+  const mine = new Set(tagsOf(song));
+  const base = songVectors[song.title];
+  return songs
+    .filter(s => s.title !== song.title)
+    .map(s => {
+      const shared = tagsOf(s).filter(t => mine.has(t));
+      const vec = songVectors[s.title];
+      let score = 0;
+      if (base && vec && base.length === vec.length) {
+        score = base.reduce((sum, value, i) => sum + value * vec[i], 0);
+      }
+      score += shared.length * 0.05;
+      return { song: s, shared, score };
+    })
+    .sort((a, b) => b.score - a.score || b.shared.length - a.shared.length || a.song.title.localeCompare(b.song.title))
+    .slice(0, 5);
+}
+
+function normText(text) {
+  return (text || '').toLowerCase().replace(/&/g, 'and').replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
+function titleKey(title) {
+  return normText((title || '').split(' - ')[0].replace(/\s*[\(\[].*$/, ''));
+}
+
+function searchOutside(tag) {
+  if (outsideCache[tag]) return Promise.resolve(outsideCache[tag]);
+  const url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(tag) +
+    '&entity=song&limit=50&country=US';
+  return fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error('Apple Music: HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      const local = new Set(allSongs.map(s => normText((s.title.split(' - ')[0] || s.title))));
+      const seen = new Set();
+      const tagLow = tag.toLowerCase();
+      const allowed = allowedGenres(tag);
+      const results = (data.results || []).filter(r => r.kind === 'song' && r.previewUrl).filter(r => {
+        const titleLow = (r.trackName || '').toLowerCase();
+        const rest = titleLow.startsWith(tagLow) ? titleLow.slice(tagLow.length).trim() : null;
+        if (rest !== null && (!rest || /^[\(\-\[：:]/.test(rest))) return false;
+        const genre = (r.primaryGenreName || '').toLowerCase();
+        if (allowed && !allowed.includes(genre)) return false;
+        const key = normText(r.trackName) + '|' + normText(r.artistName);
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return !local.has(normText(r.trackName));
+      });
+      outsideCache[tag] = results;
+      return results;
+    });
+}
+
+function renderOutsideList(box, results, tag, seed, note) {
+  const ul = el('ul');
+  results.forEach(result => {
+    const li = el('li', 'pick');
+    li.appendChild(el('div', 'title', result.trackName));
+    li.appendChild(el('div', 'meta', result.artistName + (result.primaryGenreName ? ' · ' + result.primaryGenreName : '')));
+    const reason = seed && seed.liked
+      ? 'Because you rated ' + seed.song.title + ' ' + seed.rating + ' — popular in ' + tag + ' on Apple Music.'
+      : 'Popular in ' + tag + ' on Apple Music.';
+    li.appendChild(el('div', 'reason', reason));
+    const audio = el('audio');
+    audio.controls = true;
+    audio.preload = 'none';
+    audio.src = result.previewUrl;
+    audio.setAttribute('aria-label', '30-second Apple preview of ' + result.trackName);
+    li.appendChild(audio);
+    if (result.trackViewUrl) {
+      const link = el('a', 'open', 'Open in Apple Music');
+      link.href = result.trackViewUrl;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      li.appendChild(link);
+    }
+    ul.appendChild(li);
+  });
+  box.appendChild(ul);
+  box.appendChild(el('div', 'outside-note', note || '30-second Apple previews.'));
+}
+
+function showOutside(song) {
+  const box = document.getElementById('outside');
+  if (!box) return;
+  box.textContent = '';
+  const tag = outsideSearchTerm(song);
+  if (!tag) {
+    box.appendChild(el('div', 'outside-note', 'No tag to search for new songs.'));
+    return;
+  }
+  box.appendChild(el('h3', '', 'Songs like this'));
+  const status = el('div', 'outside-note', 'Looking for ' + tag + ' songs...');
+  box.appendChild(status);
+
+  function render(results) {
+    box.querySelectorAll('.pick, .outside-note').forEach(node => node.remove());
+    if (results.length === 0) {
+      box.appendChild(el('div', 'outside-note', 'No new ' + tag + ' songs found.'));
+      return;
+    }
+    renderOutsideList(box, results.slice(0, 5), tag, null, '30-second Apple previews. Press play to listen.');
+  }
+
+  searchOutside(tag)
+    .then(render)
+    .catch(err => {
+      status.textContent = 'Could not load new songs: ' + err.message;
+    });
+}
+
+function clipFileName(song) {
+  const ext = (song.clip.split('.').pop() || 'm4a').toLowerCase();
+  return song.title.replace(/[\\/:*?"<>|]+/g, '-') + '.' + ext;
+}
+
+function findLocalSong(query) {
+  const q = query.trim().toLowerCase();
+  if (!q) return null;
+  return allSongs.find(s => s.title.toLowerCase().includes(q)) ||
+    allSongs.find(s => {
+      const parts = s.title.split(' - ');
+      return parts.length > 1 && parts.slice(1).join(' - ').toLowerCase().includes(q);
+    }) || null;
+}
+
+function itunesGenreTag(genre) {
+  const g = (genre || '').toLowerCase();
+  if (g === 'hip-hop/rap') return 'hip hop';
+  if (g === 'r&b/soul') return 'soul';
+  if (g === 'singer/songwriter') return 'folk';
+  if (g === 'alternative') return 'alternative rock';
+  if (g === 'dance') return 'dance pop';
+  if (g === 'electronic') return 'electropop';
+  return g;
+}
+
+function allowedGenres(tag) {
+  const t = tag.toLowerCase();
+  if (t === 'city pop') return ['pop', 'j-pop', 'k-pop', 'r&b/soul'];
+  if (t === 'j-pop') return ['j-pop', 'pop'];
+  if (t === 'k-pop') return ['k-pop', 'pop'];
+  if (t.includes('hip hop') || t.includes('rap')) return ['hip-hop/rap'];
+  if (t.includes('nu metal') || t === 'metal') return ['metal', 'hard rock', 'rock', 'alternative'];
+  if (t.includes('rock') || t === 'grunge') return ['rock', 'hard rock', 'alternative', 'metal'];
+  if (t.includes('funk')) return ['funk', 'r&b/soul', 'pop', 'dance'];
+  if (t.includes('disco')) return ['dance', 'disco', 'pop', 'funk'];
+  if (t.includes('soul')) return ['r&b/soul', 'soul', 'pop'];
+  if (t.includes('jazz')) return ['jazz'];
+  if (t.includes('folk')) return ['folk', 'singer/songwriter', 'country'];
+  if (t.includes('latin')) return ['latin', 'salsa', 'world'];
+  if (t.includes('country')) return ['country'];
+  if (t.includes('classical')) return ['classical'];
+  if (t.includes('pop')) return ['pop', 'dance', 'electronic', 'alternative'];
+  return null;
+}
+
+function findOnlineSong(query) {
+  const url = 'https://itunes.apple.com/search?term=' + encodeURIComponent(query) +
+    '&entity=song&limit=5&country=US';
+  return fetch(url)
+    .then(r => {
+      if (!r.ok) throw new Error('Apple Music: HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      const result = (data.results || []).find(r => r.kind === 'song' && r.previewUrl);
+      if (!result) throw new Error('no match on Apple Music');
+      return {
+        title: result.trackName + ' - ' + result.artistName,
+        tags: itunesGenreTag(result.primaryGenreName) || result.artistName,
+        clip: ''
+      };
+    });
+}
+
+function showSimilar(song, options = {}) {
+  const box = document.getElementById('similar');
+  const picks = options.outsideOnly ? [] : similarSongs(song, allSongs);
+  box.textContent = '';
+  box.appendChild(el('h2', '', 'More songs like ' + song.title));
+  box.appendChild(el('div', 'sub', options.reason || 'Because you downloaded the 30-second clip.'));
+  if (!options.outsideOnly) {
+    box.appendChild(el('h3', '', 'From your list'));
+    const ul = el('ul');
+    picks.forEach(entry => {
+      const li = el('li', 'pick');
+      li.appendChild(el('div', 'title', entry.song.title));
+      const why = entry.shared.length
+        ? 'Shares ' + entry.shared.join(', ') + ' with ' + song.title + '.'
+        : 'Close to ' + song.title + ' in meaning.';
+      li.appendChild(el('div', 'reason', why));
+      ul.appendChild(li);
+    });
+    box.appendChild(ul);
+  }
+  const outside = el('div', 'outside');
+  outside.id = 'outside';
+  box.appendChild(outside);
+  showOutside(song);
+  box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function render(songs) {
+  allSongs = songs;
+  document.getElementById('reset').disabled = false;
+  const list = document.getElementById('list');
+  const summary = document.getElementById('summary');
+  list.textContent = '';
+
+  if (songs.length === 0) {
+    const box = el('div', 'empty', 'No songs yet. Add rows to data/my/songs.csv, then reload this page.');
+    list.appendChild(box);
+    summary.textContent = '0 songs';
+    return;
+  }
+
+  const ratings = loadRatings();
+  const ul = el('ul');
+
+  songs.forEach(song => {
+    const li = el('li', 'song');
+    li.dataset.search = song.title;
+    li.appendChild(el('div', 'title', song.title));
+    if (song.blurb) li.appendChild(el('div', 'blurb', song.blurb));
+
+    if (song.tags) {
+      const tags = el('div', 'tags');
+      song.tags.split(';').map(t => t.trim()).filter(Boolean).forEach(t => tags.appendChild(el('span', 'tag', t)));
+      li.appendChild(tags);
+    }
+
+    if (song.clip) {
+      const clip = el('div', 'clip');
+      const audio = el('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = clipURL(song);
+      audio.setAttribute('aria-label', '30-second clip of ' + song.title);
+      clip.appendChild(audio);
+      li.appendChild(clip);
+
+      const actions = el('div', 'actions');
+      const save = el('a', 'save', 'Download 30s clip');
+      save.href = clipURL(song);
+      save.download = clipFileName(song);
+      save.addEventListener('click', () => showSimilar(song));
+      actions.appendChild(save);
+      li.appendChild(actions);
+    }
+
+    const row = el('div', 'stars');
+    const label = el('span', 'rating');
+    for (let v = 1; v <= 5; v++) {
+      const btn = el('button', 'star', '★');
+      btn.type = 'button';
+      btn.dataset.v = String(v);
+      btn.setAttribute('aria-label', 'Rate ' + song.title + ' ' + v + ' of 5');
+      btn.addEventListener('click', () => {
+        ratings[song.title] = v;
+        saveRatings(ratings);
+        engineShown.clear();
+        paintStars(row, label, v);
+        updateSummary(songs, ratings);
+        updateMapLikes();
+      });
+      row.appendChild(btn);
+    }
+    row.appendChild(label);
+    paintStars(row, label, ratings[song.title] || 0);
+    li.appendChild(row);
+    ul.appendChild(li);
+  });
+
+  list.appendChild(ul);
+  updateSummary(songs, ratings);
+  filterCardList();
+}
+
+function filterCardList() {
+  const input = document.getElementById('card-search');
+  if (!input) return;
+  const query = normText(input.value);
+  const cards = [...document.querySelectorAll('#list li.song')];
+  let shown = 0;
+  cards.forEach(card => {
+    const match = !query || normText(card.dataset.search || '').includes(query);
+    card.hidden = !match;
+    if (match) shown++;
+  });
+  const note = document.getElementById('search-note');
+  if (note) note.textContent = query && shown === 0 ? 'No songs in your list match “' + input.value.trim() + '”.' : '';
+}
+
+function queueLibrarySearch() {
+  clearTimeout(librarySearchTimer);
+  const input = document.getElementById('card-search');
+  const query = input.value.trim();
+  const box = document.getElementById('library-results');
+  const list = document.getElementById('library-list');
+  const note = document.getElementById('library-note');
+  if (normText(query).length < 2) {
+    librarySearchToken++;
+    box.hidden = true;
+    list.textContent = '';
+    note.textContent = '';
+    return;
+  }
+  box.hidden = false;
+  list.textContent = '';
+  note.textContent = 'Searching the 300-song library...';
+  const token = ++librarySearchToken;
+  librarySearchTimer = setTimeout(() => {
+    loadEngine()
+      .then(({ data }) => {
+        if (token !== librarySearchToken) return;
+        const wanted = normText(query);
+        const seen = new Set();
+        const matches = [];
+        data.songs.forEach(song => {
+          if (song.source === 'mine') return;
+          if (!normText(song.title + ' ' + (song.artist || '')).includes(wanted)) return;
+          const key = titleKey(song.title);
+          if (seen.has(key)) return;
+          seen.add(key);
+          matches.push(song);
+        });
+        matches.sort((a, b) => a.title.localeCompare(b.title));
+        renderLibraryResults(matches.slice(0, 10), matches.length, query);
+      })
+      .catch(err => {
+        if (token !== librarySearchToken) return;
+        note.textContent = 'Could not load the library: ' + err.message;
+      });
+  }, 250);
+}
+
+function renderLibraryResults(matches, total, query) {
+  const list = document.getElementById('library-list');
+  const note = document.getElementById('library-note');
+  list.textContent = '';
+  if (!matches.length) {
+    note.textContent = 'No library songs match “' + query + '”.';
+    return;
+  }
+  note.textContent = total > matches.length
+    ? 'Showing ' + matches.length + ' of ' + total + ' library matches.'
+    : total + (total === 1 ? ' library match.' : ' library matches.');
+  const ul = el('ul');
+  matches.forEach(song => {
+    const li = el('li', 'pick');
+    li.appendChild(el('div', 'title', song.title));
+    if (song.artist) li.appendChild(el('div', 'meta', song.artist));
+    const tags = engineTags(song).slice(0, 2);
+    if (tags.length) {
+      const tagBox = el('div', 'tags');
+      tags.forEach(tag => tagBox.appendChild(el('span', 'tag', tag)));
+      li.appendChild(tagBox);
+    }
+    if (song.preview) {
+      const audio = el('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = song.preview;
+      audio.setAttribute('aria-label', '30-second clip of ' + song.title);
+      li.appendChild(audio);
+    }
+    const songLink = song.apple || song.link;
+    if (songLink) {
+      const link = el('a', 'open', song.apple ? 'Open in Apple Music' : 'Open song');
+      link.href = songLink;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      li.appendChild(link);
+    }
+    ul.appendChild(li);
+  });
+  list.appendChild(ul);
+}
+
+function updateSummary(songs, ratings) {
+  const rated = songs.filter(s => ratings[s.title]).length;
+  document.getElementById('summary').textContent = songs.length + ' songs, ' + rated + ' rated';
+}
+
+function meanVector(songs) {
+  const vectors = songs.map(song => songVectors[song.title]).filter(Boolean);
+  if (vectors.length === 0) return null;
+  const size = vectors[0].length;
+  const out = new Array(size).fill(0);
+  for (const vector of vectors) {
+    if (vector.length !== size) return null;
+    for (let i = 0; i < size; i++) out[i] += vector[i];
+  }
+  for (let i = 0; i < size; i++) out[i] /= vectors.length;
+  return out;
+}
+
+function unitVector(vector) {
+  let length = 0;
+  for (const value of vector) length += value * value;
+  if (length === 0) return null;
+  length = Math.sqrt(length);
+  return vector.map(value => value / length);
+}
+
+function cosineScore(a, b) {
+  let dot = 0;
+  let lenA = 0;
+  let lenB = 0;
+  for (let i = 0; i < a.length; i++) {
+    dot += a[i] * b[i];
+    lenA += a[i] * a[i];
+    lenB += b[i] * b[i];
+  }
+  return lenA && lenB ? dot / Math.sqrt(lenA * lenB) : 0;
+}
+
+function closestTo(song, list) {
+  let best = null;
+  let bestScore = -Infinity;
+  list.forEach(other => {
+    const score = cosineScore(songVectors[song.title], songVectors[other.title]);
+    if (score > bestScore) {
+      bestScore = score;
+      best = other;
+    }
+  });
+  return best ? { song: best, score: bestScore } : null;
+}
+
+function rankUnrated(unrated, taste, liked = [], disliked = []) {
+  return unrated
+    .map(song => ({
+      song,
+      score: cosineScore(taste, songVectors[song.title]),
+      liked: closestTo(song, liked),
+      disliked: closestTo(song, disliked)
+    }))
+    .sort((a, b) => b.score - a.score || a.song.title.localeCompare(b.song.title));
+}
+
+function shuffledCopy(list) {
+  const copy = list.slice();
+  for (let i = copy.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+}
+
+function tasteRanking(songs, ratings) {
+  const unrated = songs.filter(song => !ratings[song.title]);
+  if (unrated.length === 0) {
+    return { error: 'No unrated songs left. Clear a rating or add more songs.' };
+  }
+
+  const rankable = unrated.filter(song => songVectors[song.title]);
+  if (rankable.length === 0) {
+    let reason = 'The remaining unrated songs have no text vector — showing random songs.';
+    if (Object.keys(songVectors).length === 0) {
+      reason = embeddingsError
+        ? 'Text embeddings did not load (' + embeddingsError + ') — showing random songs.'
+        : 'Text embeddings are not loaded yet — showing random songs.';
+    }
+    return {
+      ranked: shuffledCopy(unrated).map(song => ({ song, score: 0 })),
+      personalized: false,
+      warning: reason
+    };
+  }
+
+  const liked = songs.filter(song => Number(ratings[song.title]) >= 4 && songVectors[song.title]);
+  const disliked = songs.filter(song => {
+    const value = Number(ratings[song.title]);
+    return value >= 1 && value <= 2 && songVectors[song.title];
+  });
+
+  if (liked.length > 0 && disliked.length > 0) {
+    const likedMean = meanVector(liked);
+    const dislikedMean = meanVector(disliked);
+    if (!likedMean || !dislikedMean) return { error: 'Some rated songs have no text vector.' };
+    let taste = unitVector(likedMean.map((value, i) => value - dislikedMean[i]));
+    let warning = '';
+    if (!taste) {
+      taste = unitVector(likedMean);
+      warning = 'Your liked and disliked tastes cancel out — using only your 4–5 songs.';
+    }
+    return { ranked: rankUnrated(rankable, taste, liked, disliked), personalized: true, warning };
+  }
+
+  if (liked.length > 0) {
+    const taste = unitVector(meanVector(liked));
+    if (!taste) return { error: 'The liked songs have no usable text vector.' };
+    return {
+      ranked: rankUnrated(rankable, taste, liked),
+      personalized: true,
+      warning: 'No 1–2 ratings yet — using only your 4–5 songs.'
+    };
+  }
+
+  if (disliked.length > 0) {
+    const mean = meanVector(disliked);
+    if (!mean) return { error: 'The disliked songs have no usable text vector.' };
+    const taste = unitVector(mean.map(value => -value));
+    if (!taste) return { error: 'The disliked songs have no usable text vector.' };
+    return {
+      ranked: rankUnrated(rankable, taste, [], disliked),
+      personalized: true,
+      warning: 'No 4–5 ratings yet — using only your 1–2 songs.'
+    };
+  }
+
+  return {
+    ranked: shuffledCopy(unrated).map(song => ({ song, score: 0 })),
+    personalized: false,
+    warning: 'No 4–5 or 1–2 ratings yet — showing songs from your list. Rate a few songs to personalize.'
+  };
+}
+
+function takePicks(songs, shown, count) {
+  const available = songs.filter(song => !shown.has(song.title));
+  for (let i = available.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [available[i], available[j]] = [available[j], available[i]];
+  }
+  const chosen = available.slice(0, count);
+  chosen.forEach(song => shown.add(song.title));
+  return chosen;
+}
+
+function takeRanked(ranked, shown, count) {
+  const chosen = ranked.filter(entry => !shown.has(entry.song.title)).slice(0, count);
+  chosen.forEach(entry => shown.add(entry.song.title));
+  return chosen.map(entry => entry.song);
+}
+
+function pickReason(song, entry, source, ratings) {
+  if (entry && entry.liked) {
+    const anchor = entry.liked.song;
+    const rating = ratings[anchor.title];
+    const tag = sharedTag(song, anchor);
+    return 'Close to ' + anchor.title + (rating ? ' (you rated ' + rating + ')' : '')
+      + (tag ? ' — both ' + tag : '') + '.';
+  }
+  if (entry && entry.disliked) {
+    const anchor = entry.disliked.song;
+    const rating = ratings[anchor.title];
+    return 'Different from ' + anchor.title + (rating ? ' (you rated ' + rating + ')' : '') + '.';
+  }
+  return source === 'your ratings'
+    ? 'Text-only match from your ratings.'
+    : 'Random pick — rate more songs to personalize.';
+}
+
+function renderPickList(box, chosen, shown, songs, heading, scroll, ranked = null, source = 'your ratings') {
+  if (chosen.length === 0) {
+    box.appendChild(el('div', 'outside-note', 'No more songs in your list.'));
+    return;
+  }
+
+  const ratings = loadRatings();
+  box.appendChild(el('h2', '', heading));
+  const ul = el('ul');
+  chosen.forEach(song => {
+    const li = el('li', 'pick');
+    li.appendChild(el('div', 'title', song.title));
+    const entry = ranked ? ranked.find(item => item.song.title === song.title) : null;
+    li.appendChild(el('div', 'reason', pickReason(song, entry, source, ratings)));
+    if (song.clip) {
+      li.appendChild(el('div', 'meta', '30-second preview'));
+      const audio = el('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = clipURL(song);
+      audio.setAttribute('aria-label', '30-second clip of ' + song.title);
+      li.appendChild(audio);
+
+      const actions = el('div', 'actions');
+      const save = el('a', 'save', 'Download 30s clip');
+      save.href = clipURL(song);
+      save.download = clipFileName(song);
+      save.addEventListener('click', () => {
+        const more = ranked ? takeRanked(ranked, shown, 5) : takePicks(songs, shown, 5);
+        renderPickList(box, more, shown, songs, more.length + ' more songs from ' + source, true, ranked, source);
+      });
+      actions.appendChild(save);
+      li.appendChild(actions);
+    }
+    ul.appendChild(li);
+  });
+  box.appendChild(ul);
+
+  if (scroll) ul.scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function loadEngine() {
+  if (engineCache) return Promise.resolve(engineCache);
+  if (engineLoading) return engineLoading;
+  engineLoading = fetch('data/mix/engine.json', { cache: 'no-store' })
+    .then(r => {
+      if (!r.ok) throw new Error('engine.json: HTTP ' + r.status);
+      return r.json();
+    })
+    .then(data => {
+      const size = data.vectors[0].length;
+      const mean = new Array(size).fill(0);
+      data.vectors.forEach(vector => {
+        for (let i = 0; i < size; i++) mean[i] += vector[i] / data.vectors.length;
+      });
+      const centered = data.vectors.map(vector => unitVector(vector.map((value, i) => value - mean[i])));
+      const byTitle = {};
+      data.songs.forEach((song, index) => {
+        if (!(song.title in byTitle)) byTitle[song.title] = index;
+      });
+      engineCache = { data, centered, byTitle };
+      return engineCache;
+    })
+    .catch(err => {
+      engineLoading = null;
+      throw err;
+    });
+  return engineLoading;
+}
+
+function updateStylePicker() {
+  document.querySelectorAll('#style-picker .style-chip').forEach(btn => {
+    const on = selectedStyles.has(btn.dataset.style);
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', String(on));
+  });
+  const note = document.getElementById('style-note');
+  if (note) {
+    note.textContent = selectedStyles.size
+      ? 'Using ' + [...selectedStyles].join(' + ') + '. Press Get 5.'
+      : '';
+  }
+}
+
+function loadStylePicker() {
+  const box = document.getElementById('style-picker');
+  loadEngine()
+    .then(({ data }) => {
+      const counts = {};
+      data.songs.forEach(song => {
+        if (song.source === 'mine') return;
+        const style = song.style || 'other';
+        counts[style] = (counts[style] || 0) + 1;
+      });
+      const styles = Object.keys(counts).sort((a, b) => counts[b] - counts[a] || a.localeCompare(b));
+      box.textContent = '';
+      styles.forEach(style => {
+        const btn = el('button', 'style-chip');
+        btn.type = 'button';
+        btn.dataset.style = style;
+        btn.appendChild(document.createTextNode(style));
+        btn.appendChild(el('span', 'style-count', String(counts[style])));
+        btn.setAttribute('aria-label', style + ': ' + counts[style] + ' new songs');
+        if (!counts[style]) {
+          btn.disabled = true;
+          btn.title = 'No new songs in this style yet.';
+        }
+        btn.addEventListener('click', () => {
+          const note = document.getElementById('style-note');
+          if (selectedStyles.has(style)) {
+            selectedStyles.delete(style);
+          } else {
+            if (selectedStyles.size >= 3) {
+              if (note) note.textContent = 'Pick up to 3 styles.';
+              return;
+            }
+            selectedStyles.add(style);
+          }
+          engineShown.clear();
+          document.getElementById('picks').textContent = '';
+          updateStylePicker();
+        });
+        box.appendChild(btn);
+      });
+      updateStylePicker();
+    })
+    .catch(err => {
+      box.textContent = '';
+      box.appendChild(el('div', 'empty', 'Could not load styles: ' + err.message));
+    });
+}
+
+function friendHiddenEntries() {
+  if (friendRatings.size < 10) return [];
+  return [...friendRatings.values()]
+    .sort((a, b) => b.rating - a.rating || a.order - b.order)
+    .slice(0, 3);
+}
+
+function friendCutoffTie() {
+  const ordered = [...friendRatings.values()]
+    .sort((a, b) => b.rating - a.rating || a.order - b.order);
+  if (ordered.length < 4) return null;
+  return ordered[2].rating === ordered[3].rating ? ordered[2].rating : null;
+}
+
+function hashString(text) {
+  let hash = 2166136261;
+  for (let i = 0; i < text.length; i++) {
+    hash ^= text.charCodeAt(i);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function seededRandom(seed) {
+  let state = seed >>> 0;
+  return function () {
+    state = (state + 0x6D2B79F5) >>> 0;
+    let t = Math.imul(state ^ (state >>> 15), 1 | state);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+function friendStyleBaseline(visible, candidates, hiddenIds) {
+  const styles = new Set(visible
+    .filter(entry => entry.rating >= 4)
+    .map(entry => entry.song.style)
+    .filter(Boolean));
+  if (!styles.size) return null;
+  const pool = candidates.filter(candidate => styles.has(candidate.song.style));
+  if (!pool.length) return 0;
+  const seedText = [...friendRatings.values()]
+    .sort((a, b) => a.order - b.order)
+    .map(entry => entry.song.id + '=' + entry.rating)
+    .join(',');
+  const random = seededRandom(hashString(seedText));
+  let hits = 0;
+  for (let draw = 0; draw < 1000; draw++) {
+    const copy = pool.slice();
+    for (let i = 0; i < Math.min(5, copy.length); i++) {
+      const j = i + Math.floor(random() * (copy.length - i));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+      if (hiddenIds.has(copy[i].song.id)) hits++;
+    }
+  }
+  return hits / 1000;
+}
+
+function friendLetter() {
+  const match = document.getElementById('friend-name').value.trim().match(/[A-Za-z]/);
+  return match ? match[0].toUpperCase() : 'A';
+}
+
+function todayText() {
+  const now = new Date();
+  const month = String(now.getMonth() + 1).padStart(2, '0');
+  const day = String(now.getDate()).padStart(2, '0');
+  return now.getFullYear() + '-' + month + '-' + day;
+}
+
+function friendResultLine(found, styleAverage, libraryAverage) {
+  const ratings = [...friendRatings.values()]
+    .sort((a, b) => a.order - b.order)
+    .map(entry => entry.song.id + '=' + entry.rating)
+    .join(',');
+  return friendLetter()
+    + ' | found ' + found + '/3'
+    + ' | styles ' + (styleAverage === null ? 'n/a' : styleAverage.toFixed(2))
+    + ' | random ' + libraryAverage.toFixed(2)
+    + ' | ratings ' + ratings
+    + ' | ' + todayText();
+}
+
+async function copyFriendText(text, note) {
+  note.textContent = '';
+  if (!navigator.clipboard || !navigator.clipboard.writeText) {
+    note.textContent = 'Copy is not available in this browser.';
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    note.textContent = 'Copied.';
+  } catch (err) {
+    note.textContent = 'Copy failed: ' + err.message;
+  }
+}
+
+function updateFriendStyleChips() {
+  document.querySelectorAll('#friend-styles .style-chip').forEach(btn => {
+    const on = btn.dataset.style === friendStyle;
+    btn.classList.toggle('on', on);
+    btn.setAttribute('aria-pressed', String(on));
+  });
+}
+
+function buildFriendStyles(data) {
+  const box = document.getElementById('friend-styles');
+  const counts = {};
+  data.songs.forEach(song => {
+    if (song.source === 'mine') return;
+    const style = song.style || 'other';
+    counts[style] = (counts[style] || 0) + 1;
+  });
+  box.textContent = '';
+  Object.keys(counts).sort((a, b) => a.localeCompare(b)).forEach(style => {
+    const btn = el('button', 'style-chip', style);
+    btn.type = 'button';
+    btn.dataset.style = style;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.title = 'Show ' + counts[style] + ' songs in ' + style + '. Tap again to clear.';
+    btn.appendChild(el('span', 'style-count', String(counts[style])));
+    btn.addEventListener('click', () => {
+      friendStyle = friendStyle === style ? '' : style;
+      updateFriendStyleChips();
+      renderFriendSearch();
+    });
+    box.appendChild(btn);
+  });
+  updateFriendStyleChips();
+}
+
+function renderFriendSearch() {
+  const list = document.getElementById('friend-results');
+  const note = document.getElementById('friend-note');
+  const input = document.getElementById('friend-search');
+  list.textContent = '';
+  if (!friendData) {
+    note.textContent = 'Loading the library...';
+    return;
+  }
+  const query = input.value.trim();
+  if (!query && !friendStyle) {
+    note.textContent = friendRatings.size
+      ? 'Search or choose a style to rate more songs.'
+      : 'Search or choose a style, then rate 10 songs.';
+    return;
+  }
+  const wanted = normText(query);
+  const hiddenIds = new Set(friendHiddenEntries().map(entry => entry.song.id));
+  const matches = friendData.songs
+    .filter(song => song.source !== 'mine')
+    .filter(song => !hiddenIds.has(song.id))
+    .filter(song => !friendStyle || song.style === friendStyle)
+    .filter(song => !wanted || normText(song.title + ' ' + (song.artist || '')).includes(wanted))
+    .sort((a, b) => a.title.localeCompare(b.title));
+  if (!matches.length) {
+    note.textContent = query
+      ? 'No library songs match “' + query + '”.'
+      : 'No songs in this style.';
+    return;
+  }
+  note.textContent = 'Showing ' + Math.min(10, matches.length) + ' of ' + matches.length + ' matches.';
+  const ul = el('ul');
+  matches.slice(0, 10).forEach(song => {
+    const li = el('li', 'pick');
+    li.appendChild(el('div', 'title', song.title));
+    const meta = [song.artist, song.style].filter(Boolean).join(' · ');
+    if (meta) li.appendChild(el('div', 'meta', meta));
+    const tags = engineTags(song).slice(0, 2);
+    if (tags.length) {
+      const tagBox = el('div', 'tags');
+      tags.forEach(tag => tagBox.appendChild(el('span', 'tag', tag)));
+      li.appendChild(tagBox);
+    }
+    const rating = friendRatings.get(song.id);
+    const row = el('div', 'stars');
+    for (let value = 1; value <= 5; value++) {
+      const btn = el('button', 'star', '★');
+      btn.type = 'button';
+      btn.classList.toggle('on', Boolean(rating) && value <= rating.rating);
+      btn.setAttribute('aria-label', 'Rate ' + song.title + ' ' + value + ' out of 5');
+      btn.addEventListener('click', () => {
+        if (!friendRatings.has(song.id) && friendRatings.size >= 10) {
+          note.textContent = 'You already rated 10 songs. Change a star or press Start over.';
+          return;
+        }
+        const existing = friendRatings.get(song.id);
+        if (!existing) friendOrder += 1;
+        friendRatings.set(song.id, {
+          song,
+          rating: value,
+          order: existing ? existing.order : friendOrder
+        });
+        updateFriendTest();
+      });
+      row.appendChild(btn);
+    }
+    row.appendChild(el('span', 'rating', rating ? rating.rating + '/5' : 'not rated'));
+    if (rating) {
+      const clear = el('button', 'friend-clear', 'Clear');
+      clear.type = 'button';
+      clear.addEventListener('click', () => {
+        friendRatings.delete(song.id);
+        updateFriendTest();
+      });
+      row.appendChild(clear);
+    }
+    li.appendChild(row);
+    if (song.preview) {
+      const audio = el('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = song.preview;
+      audio.setAttribute('aria-label', '30-second clip of ' + song.title);
+      li.appendChild(audio);
+    }
+    const songLink = song.apple || song.link;
+    if (songLink) {
+      const link = el('a', 'open', song.apple ? 'Open in Apple Music' : 'Open song');
+      link.href = songLink;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      li.appendChild(link);
+    }
+    ul.appendChild(li);
+  });
+  list.appendChild(ul);
+}
+
+function renderFriendResult(hidden) {
+  const result = document.getElementById('friend-result');
+  result.textContent = '';
+  if (!friendData || !friendCentered || hidden.length !== 3) return;
+  const hiddenIds = new Set(hidden.map(entry => entry.song.id));
+  const visible = [...friendRatings.values()].filter(entry => !hiddenIds.has(entry.song.id));
+  const visibleIds = new Set(visible.map(entry => entry.song.id));
+  const visibleIndices = visible
+    .map(entry => friendIndexById.get(entry.song.id))
+    .filter(index => index !== undefined);
+  if (visibleIndices.length !== 7) {
+    result.appendChild(el('div', 'warn', 'Could not use the 7 visible ratings. Press Start over.'));
+    return;
+  }
+  const likedIndices = visible
+    .filter(entry => entry.rating >= 4)
+    .map(entry => friendIndexById.get(entry.song.id))
+    .filter(index => index !== undefined);
+  const dislikedIndices = visible
+    .filter(entry => entry.rating <= 2)
+    .map(entry => friendIndexById.get(entry.song.id))
+    .filter(index => index !== undefined);
+  let taste = null;
+  if (likedIndices.length) {
+    const likedMean = engineMean(friendCentered, likedIndices);
+    const dislikedMean = dislikedIndices.length ? engineMean(friendCentered, dislikedIndices) : null;
+    if (likedMean && dislikedMean) {
+      taste = unitVector(likedMean.map((value, i) => value - dislikedMean[i]));
+    }
+    if (!taste && likedMean) taste = unitVector(likedMean);
+  } else if (dislikedIndices.length) {
+    const dislikedMean = engineMean(friendCentered, dislikedIndices);
+    if (dislikedMean) taste = unitVector(dislikedMean.map(value => -value));
+  }
+  if (!taste) {
+    const visibleMean = engineMean(friendCentered, visibleIndices);
+    taste = visibleMean ? unitVector(visibleMean) : null;
+  }
+  if (!taste) {
+    result.appendChild(el('div', 'warn', 'Could not build a taste from these 10 ratings. Press Start over.'));
+    return;
+  }
+  const candidates = [];
+  friendData.songs.forEach(song => {
+    if (song.source === 'mine') return;
+    if (visibleIds.has(song.id)) return;
+    const index = friendIndexById.get(song.id);
+    if (index === undefined) return;
+    candidates.push({ song, index });
+  });
+  const chosen = candidates
+    .map(candidate => ({ ...candidate, score: dotProduct(friendCentered[candidate.index], taste) }))
+    .sort((a, b) => b.score - a.score || a.song.title.localeCompare(b.song.title))
+    .slice(0, 5);
+  const found = chosen.filter(candidate => hiddenIds.has(candidate.song.id)).length;
+  const styleAverage = friendStyleBaseline(visible, candidates, hiddenIds);
+  const libraryAverage = candidates.length ? 15 / candidates.length : 0;
+  const friendLabel = document.getElementById('friend-name').value.trim() || 'Friend';
+  result.appendChild(el('h3', '', friendLabel + ' — result'));
+  result.appendChild(el('div', 'friend-hit', 'Found ' + found + '/3 hidden songs in the 5 picks.'));
+  const compare = el('div', 'friend-compare');
+  [
+    ['My taste engine', found + '/3'],
+    ['Random from their styles', styleAverage === null ? 'n/a' : styleAverage.toFixed(2)],
+    ['Random from library', libraryAverage.toFixed(2)]
+  ].forEach(([label, value]) => {
+    const box = el('div');
+    box.appendChild(el('span', '', label));
+    box.appendChild(el('strong', '', value));
+    compare.appendChild(box);
+  });
+  result.appendChild(compare);
+  const copyRow = el('div', 'friend-status-row');
+  const copyButton = el('button', 'reset', 'Copy result');
+  copyButton.type = 'button';
+  const copyNote = el('span', 'outside-note', '');
+  copyButton.addEventListener('click', () => {
+    copyFriendText(friendResultLine(found, styleAverage, libraryAverage), copyNote);
+  });
+  copyRow.appendChild(copyButton);
+  copyRow.appendChild(copyNote);
+  result.appendChild(copyRow);
+  result.appendChild(el('div', 'outside-note', 'The taste came from the 7 visible ratings. The 3 hidden songs stayed in the library pool.'));
+  const tieRating = friendCutoffTie();
+  result.appendChild(el('div', 'outside-note', tieRating === null
+    ? 'Top 3: most stars; if two songs tie, the song rated first wins.'
+    : 'Tie at ' + tieRating + '★: the song rated first kept the third hidden spot.'));
+  result.appendChild(el('div', 'outside-note', 'Same title? The artist and style are shown, so different songs stay separate.'));
+  const hiddenBox = el('div', 'friend-hidden');
+  hiddenBox.appendChild(el('h4', '', 'Hidden top 3 — now revealed'));
+  const hiddenUl = el('ul');
+  hidden.forEach(entry => {
+    const song = entry.song;
+    const li = el('li', 'pick');
+    li.appendChild(el('div', 'title', song.title));
+    const meta = [song.artist, song.style].filter(Boolean).join(' · ');
+    if (meta) li.appendChild(el('div', 'meta', meta));
+    const wasFound = chosen.some(candidate => candidate.song.id === song.id);
+    const row = el('div', 'friend-status-row');
+    row.appendChild(el('span', 'rating', entry.rating + '/5'));
+    row.appendChild(el('span', 'friend-status ' + (wasFound ? 'found' : 'missing'),
+      wasFound ? 'Found in the 5 picks' : 'Not in the 5 picks'));
+    li.appendChild(row);
+    hiddenUl.appendChild(li);
+  });
+  hiddenBox.appendChild(hiddenUl);
+  result.appendChild(hiddenBox);
+  result.appendChild(el('h4', 'friend-picks-title', 'The 5 picks'));
+  const ul = el('ul');
+  chosen.forEach(candidate => {
+    const song = candidate.song;
+    const li = el('li', 'pick');
+    li.appendChild(el('div', 'title', song.title));
+    const meta = [song.artist, song.style].filter(Boolean).join(' · ');
+    if (meta) li.appendChild(el('div', 'meta', meta));
+    const tags = engineTags(song).slice(0, 2);
+    if (tags.length) {
+      const tagBox = el('div', 'tags');
+      tags.forEach(tag => tagBox.appendChild(el('span', 'tag', tag)));
+      li.appendChild(tagBox);
+    }
+    if (song.preview) {
+      const audio = el('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = song.preview;
+      audio.setAttribute('aria-label', '30-second clip of ' + song.title);
+      li.appendChild(audio);
+    }
+    const songLink = song.apple || song.link;
+    if (songLink) {
+      const link = el('a', 'open', song.apple ? 'Open in Apple Music' : 'Open song');
+      link.href = songLink;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      li.appendChild(link);
+    }
+    ul.appendChild(li);
+  });
+  result.appendChild(ul);
+}
+
+function updateFriendTest() {
+  const count = friendRatings.size;
+  const hidden = friendHiddenEntries();
+  const jump = document.getElementById('friend-jump');
+  if (jump) {
+    jump.href = count === 10 ? '#friend-result' : '#friend-section';
+    jump.textContent = count === 10
+      ? 'Friend test: 10/10 — see the three boxes ↓'
+      : count === 0
+        ? 'Friend test: separate from the main list — rate 10 songs ↓'
+        : 'Friend test: ' + count + '/10 — keep rating inside Friend test ↓';
+  }
+  document.getElementById('friend-progress').textContent = count + '/10 rated'
+    + (count === 10 ? ' · 3 hidden, 7 visible' : '');
+  renderFriendSearch();
+  if (count === 10) {
+    renderFriendResult(hidden);
+    if (!friendResultShown) {
+      friendResultShown = true;
+      document.getElementById('friend-result').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  } else {
+    friendResultShown = false;
+    document.getElementById('friend-result').textContent = '';
+  }
+}
+
+function resetFriendTest() {
+  friendRatings.clear();
+  friendStyle = '';
+  friendOrder = 0;
+  friendResultShown = false;
+  document.getElementById('friend-name').value = '';
+  document.getElementById('friend-search').value = '';
+  document.getElementById('friend-result').textContent = '';
+  updateFriendStyleChips();
+  updateFriendTest();
+}
+
+function initFriendTest() {
+  const box = document.getElementById('friend-styles');
+  loadEngine()
+    .then(({ data, centered }) => {
+      friendData = data;
+      friendCentered = centered;
+      friendIndexById = new Map();
+      data.songs.forEach((song, index) => friendIndexById.set(song.id, index));
+      buildFriendStyles(data);
+      updateFriendTest();
+    })
+    .catch(err => {
+      box.textContent = '';
+      box.appendChild(el('div', 'empty', 'Could not load the friend test library: ' + err.message));
+    });
+}
+
+function engineMean(vectors, indices) {
+  if (indices.length === 0) return null;
+  const size = vectors[indices[0]].length;
+  const out = new Array(size).fill(0);
+  indices.forEach(index => {
+    const vector = vectors[index];
+    if (!vector || vector.length !== size) return;
+    for (let i = 0; i < size; i++) out[i] += vector[i];
+  });
+  for (let i = 0; i < size; i++) out[i] /= indices.length;
+  return out;
+}
+
+function dotProduct(a, b) {
+  let sum = 0;
+  for (let i = 0; i < a.length; i++) sum += a[i] * b[i];
+  return sum;
+}
+
+function engineTags(song) {
+  return (song.tags || []).slice(0, 4);
+}
+
+function closestLiked(candidate, likedPool, centered) {
+  let best = null;
+  let bestScore = -Infinity;
+  likedPool.forEach(anchor => {
+    const score = dotProduct(centered[candidate.index], centered[anchor.index]);
+    if (score > bestScore) {
+      bestScore = score;
+      best = anchor;
+    }
+  });
+  return best;
+}
+
+function engineReason(song, closest, avoid, ratings) {
+  if (closest) {
+    return 'Because you liked ' + closest.song.title + ' (' + closest.rating + '★).';
+  }
+  if (avoid) {
+    return 'Because you rated ' + avoid.title + ' ' + ratings[avoid.title] + '★, this avoids that sound.';
+  }
+  if (selectedStyles.size) {
+    return 'Because you chose ' + [...selectedStyles].join(' + ') + '.';
+  }
+  return 'Random pick — rate a song for a personal reason.';
+}
+
+function renderEnginePicks(box, picks, avoid, ratings, note) {
+  const ul = el('ul');
+  picks.forEach(entry => {
+    const song = entry.song;
+    const li = el('li', 'pick');
+    li.appendChild(el('div', 'title', song.title));
+    const meta = [song.artist, song.style].filter(Boolean).join(' · ');
+    if (meta) li.appendChild(el('div', 'meta', meta));
+    li.appendChild(el('div', 'reason', engineReason(song, entry.closest, avoid, ratings)));
+    const tags = engineTags(song);
+    if (tags.length) {
+      const tagBox = el('div', 'tags');
+      tags.forEach(tag => tagBox.appendChild(el('span', 'tag', tag)));
+      li.appendChild(tagBox);
+    }
+    if (song.preview) {
+      const audio = el('audio');
+      audio.controls = true;
+      audio.preload = 'none';
+      audio.src = song.preview;
+      audio.setAttribute('aria-label', '30-second clip of ' + song.title);
+      li.appendChild(audio);
+    }
+    const songLink = song.apple || song.link;
+    if (songLink) {
+      const link = el('a', 'open', song.apple ? 'Open in Apple Music' : 'Open song');
+      link.href = songLink;
+      link.target = '_blank';
+      link.rel = 'noopener';
+      li.appendChild(link);
+    }
+    ul.appendChild(li);
+  });
+  box.appendChild(ul);
+  box.appendChild(el('div', 'outside-note', note || '30-second clips. These songs are in your list and you have not rated them.'));
+}
+
+function showPicks(songs) {
+  const picks = document.getElementById('picks');
+  picks.textContent = '';
+  if (songs.length === 0) {
+    picks.appendChild(el('div', 'outside-note', 'Songs are still loading.'));
+    picks.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  const ratings = loadRatings();
+  const liked = songs.filter(song => Number(ratings[song.title]) >= 4);
+  const disliked = songs.filter(song => {
+    const value = Number(ratings[song.title]);
+    return value >= 1 && value <= 2;
+  });
+  const avoid = disliked.length ? disliked[Math.floor(Math.random() * disliked.length)] : null;
+  const startWarning = liked.length
+    ? ''
+    : disliked.length
+      ? 'No 4–5★ ratings yet — avoiding your 1–2★ songs.'
+      : selectedStyles.size
+        ? ''
+        : 'No ratings yet — showing 5 random songs. Rate a song for personal picks.';
+
+  picks.appendChild(el('h2', '', 'Finding 5 new songs beyond your list'));
+  if (startWarning) picks.appendChild(el('div', 'warn', startWarning));
+  picks.appendChild(el('div', 'outside-note', selectedStyles.size
+    ? 'Matching your chosen styles against the library...'
+    : 'Matching your ratings against the library...'));
+  picks.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+  loadEngine()
+    .then(({ data, centered, byTitle }) => {
+      const likedPool = liked
+        .map(song => ({ song, index: byTitle[song.title], rating: Number(ratings[song.title]) }))
+        .filter(entry => entry.index !== undefined);
+      const likedIdx = likedPool.map(entry => entry.index);
+      const dislikedIdx = disliked.map(song => byTitle[song.title]).filter(index => index !== undefined);
+      let taste = null;
+      let tasteWarning = '';
+      if (likedIdx.length) {
+        const likedMean = engineMean(centered, likedIdx);
+        const dislikedMean = dislikedIdx.length ? engineMean(centered, dislikedIdx) : null;
+        if (likedMean && dislikedMean) {
+          taste = unitVector(likedMean.map((value, i) => value - dislikedMean[i]));
+          if (!taste) tasteWarning = 'Your liked and disliked tastes cancel out — using only your 4–5★ songs.';
+        }
+        if (!taste && likedMean) taste = unitVector(likedMean);
+        if (!taste) tasteWarning = 'Could not build a taste from your ratings — showing random songs.';
+      } else if (dislikedIdx.length) {
+        const dislikedMean = engineMean(centered, dislikedIdx);
+        taste = dislikedMean ? unitVector(dislikedMean.map(value => -value)) : null;
+        if (!taste) tasteWarning = 'Could not avoid your 1–2★ songs — showing random songs.';
+      }
+
+      const ratedTitles = new Set(
+        Object.entries(ratings)
+          .filter(([, value]) => Number(value) > 0)
+          .map(([title]) => titleKey(title))
+      );
+      const seen = new Set();
+      const candidates = [];
+      data.songs.forEach((song, index) => {
+        if (song.source === 'mine') return;
+        if (song.id in ratings || ratedTitles.has(titleKey(song.title))) return;
+        const key = titleKey(song.title);
+        if (seen.has(key)) return;
+        seen.add(key);
+        candidates.push({ song, index });
+      });
+
+      const styleCandidates = selectedStyles.size
+        ? candidates.filter(candidate => selectedStyles.has(candidate.song.style))
+        : [];
+      if (!taste && selectedStyles.size && styleCandidates.length) {
+        const styleMean = engineMean(centered, styleCandidates.map(candidate => candidate.index));
+        taste = styleMean ? unitVector(styleMean) : null;
+        if (!taste) tasteWarning = 'Could not build a taste from these styles — showing their songs in random order.';
+      }
+      const eligible = selectedStyles.size ? styleCandidates : candidates;
+
+      let pool;
+      if (taste) {
+        const scored = eligible
+          .map(candidate => ({ ...candidate, score: dotProduct(centered[candidate.index], taste) }))
+          .sort((a, b) => b.score - a.score || a.song.title.localeCompare(b.song.title));
+        pool = scored;
+      } else {
+        pool = shuffledCopy(eligible);
+      }
+
+      let available = pool.filter(candidate => !engineShown.has(candidate.song.id));
+      if (available.length < 5) {
+        engineShown.clear();
+        available = pool;
+      }
+      const chosen = available.slice(0, 5);
+      chosen.forEach(candidate => engineShown.add(candidate.song.id));
+
+      picks.textContent = '';
+      picks.appendChild(el('h2', '', chosen.length + ' new songs beyond your list'));
+      if (startWarning) picks.appendChild(el('div', 'warn', startWarning));
+      if (tasteWarning) picks.appendChild(el('div', 'warn', tasteWarning));
+      if (chosen.length === 0) {
+        const why = selectedStyles.size
+          ? 'No unrated new songs in ' + [...selectedStyles].join(' + ') + ' yet. Add songs or clear a rating.'
+          : 'No new library songs left. Clear a rating or add songs to the library.';
+        picks.appendChild(el('div', 'outside-note', why));
+      } else {
+        const rendered = chosen.map(candidate => ({
+          song: candidate.song,
+          closest: likedPool.length ? closestLiked(candidate, likedPool, centered) : null
+        }));
+        const styleLabel = [...selectedStyles].join(' + ');
+        const sourceNote = selectedStyles.size
+          ? (chosen.length < 5
+            ? 'Only ' + chosen.length + ' unrated new songs in ' + styleLabel + ' right now.'
+            : 'New songs from ' + styleLabel + ' in the library.')
+          : '30-second Apple previews. New songs from the library; not in your 76-song list.';
+        renderEnginePicks(picks, rendered, avoid, ratings, sourceNote);
+      }
+      picks.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    })
+    .catch(err => {
+      picks.textContent = '';
+      picks.appendChild(el('h2', '', 'Could not load new songs'));
+      picks.appendChild(el('div', 'warn', 'Could not load the new-song library: ' + err.message));
+      picks.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+}
+
+document.getElementById('find').addEventListener('submit', event => {
+  event.preventDefault();
+  const input = document.getElementById('find-input');
+  const note = document.getElementById('find-note');
+  const query = input.value.trim();
+  if (!query) {
+    note.textContent = 'Type a song title or artist.';
+    return;
+  }
+  const local = findLocalSong(query);
+  if (local) {
+    note.textContent = 'Showing songs like ' + local.title + '.';
+    showSimilar(local, { reason: 'Because you sent this song.' });
+    return;
+  }
+  note.textContent = 'Looking for "' + query + '" on Apple Music...';
+  findOnlineSong(query)
+    .then(seed => {
+      note.textContent = 'Showing songs like ' + seed.title + '.';
+      showSimilar(seed, { outsideOnly: true, reason: 'Because you sent this song.' });
+    })
+    .catch(err => {
+      note.textContent = 'Could not find that song: ' + err.message;
+    });
+});
+
+document.getElementById('get').addEventListener('click', () => {
+  showPicks(allSongs);
+  updateMapLikes();
+});
+
+function drawCatalogMap() {
+  const box = document.getElementById('map');
+  const colors = {
+    'top kz': '#64748b',
+    'pop': '#e11d48',
+    'rock': '#b45309',
+    'hip hop': '#7c3aed',
+    'k-pop': '#db2777',
+    'j-pop': '#ca8a04',
+    'jazz': '#0d9488',
+    'classical': '#475569',
+    'electronic': '#2563eb',
+    'r&b soul': '#9333ea',
+    'country': '#92400e',
+    'metal': '#1f2937',
+    'latin': '#c026d3',
+    'reggae': '#15803d',
+    'indie folk': '#65a30d',
+    'city pop': '#0891b2',
+    'lofi': '#78716c',
+    'punk': '#dc2626',
+    'blues': '#1d4ed8',
+    'shoegaze': '#0ea5e9',
+    'alternative rock': '#b45309',
+    'trip pop': '#475569',
+    'indie rock': '#7c3aed',
+    'pop-punk': '#dc2626',
+    'post-punk': '#1f2937'
+  };
+  const colorFor = style => colors[style] || '#9ca3af';
+  loadEngine()
+    .then(({ data }) => {
+      const songs = data.songs.filter(song => Array.isArray(song.xy) && song.xy.length >= 2);
+      mapCircles.clear();
+      const width = 1000;
+      const height = 600;
+      const ns = 'http://www.w3.org/2000/svg';
+      const svg = document.createElementNS(ns, 'svg');
+      svg.setAttribute('viewBox', '0 0 ' + width + ' ' + height);
+      svg.setAttribute('role', 'img');
+      svg.setAttribute('aria-label', 'Map of ' + songs.length + ' songs colored by style');
+      const info = document.getElementById('map-info');
+      const presentStyles = new Set();
+      const labelFor = song => {
+        const style = song.style || 'other';
+        const parts = song.artist ? [song.title] : (song.title || '').split(' - ');
+        const title = parts[0] || song.title || 'Unknown song';
+        const artist = song.artist || (parts.length > 1 ? parts.slice(1).join(' - ') : '');
+        return title + (artist ? ' — ' + artist : '') + ' · ' + style;
+      };
+      const showSong = song => {
+        if (info) info.textContent = labelFor(song);
+      };
+      songs.forEach(song => {
+        const style = song.style || 'other';
+        presentStyles.add(style);
+        const cx = String(30 + song.xy[0] * (width - 60));
+        const cy = String(30 + song.xy[1] * (height - 60));
+        const group = document.createElementNS(ns, 'g');
+        group.setAttribute('class', 'song-dot');
+        group.dataset.id = song.id;
+        const circle = document.createElementNS(ns, 'circle');
+        circle.setAttribute('cx', cx);
+        circle.setAttribute('cy', cy);
+        circle.setAttribute('r', '3.5');
+        circle.setAttribute('fill', colorFor(style));
+        const hit = document.createElementNS(ns, 'circle');
+        hit.setAttribute('cx', cx);
+        hit.setAttribute('cy', cy);
+        hit.setAttribute('r', '9');
+        hit.setAttribute('fill', 'transparent');
+        hit.style.pointerEvents = 'all';
+        const titleEl = document.createElementNS(ns, 'title');
+        titleEl.textContent = labelFor(song);
+        group.appendChild(circle);
+        group.appendChild(hit);
+        group.appendChild(titleEl);
+        group.addEventListener('mouseenter', () => showSong(song));
+        group.addEventListener('click', () => showSong(song));
+        if (song.title) mapCircles.set(song.title, circle);
+        svg.appendChild(group);
+      });
+      const legend = el('div', 'map-legend');
+      [...presentStyles].sort().forEach(style => {
+        const item = el('span', 'legend-item');
+        const dot = el('span', 'legend-swatch');
+        dot.style.background = colorFor(style);
+        item.appendChild(dot);
+        item.appendChild(document.createTextNode(style));
+        legend.appendChild(item);
+      });
+      const likedItem = el('span', 'legend-item');
+      likedItem.appendChild(el('span', 'legend-swatch liked-swatch'));
+      likedItem.appendChild(document.createTextNode('your 4–5★'));
+      legend.appendChild(likedItem);
+      const scroll = el('div', 'map-scroll');
+      scroll.appendChild(svg);
+      box.textContent = '';
+      box.appendChild(scroll);
+      box.appendChild(legend);
+      const note = el('div', 'outside-note', songs.length + ' songs on the map.');
+      const likedNote = el('span');
+      likedNote.id = 'map-liked-note';
+      note.appendChild(likedNote);
+      box.appendChild(note);
+      updateMapLikes();
+    })
+    .catch(err => {
+      box.textContent = '';
+      box.appendChild(el('div', 'empty', 'Could not load the map: ' + err.message));
+    });
+}
+
+function updateMapLikes() {
+  const ratings = loadRatings();
+  let likedCount = 0;
+  mapCircles.forEach((circle, title) => {
+    const liked = Number(ratings[title]) >= 4;
+    circle.classList.toggle('liked', liked);
+    if (liked) likedCount++;
+  });
+  const note = document.getElementById('map-liked-note');
+  if (note) {
+    note.textContent = likedCount
+      ? ' ' + likedCount + (likedCount === 1 ? ' liked song' : ' liked songs') + ' in orange.'
+      : ' No liked songs in orange yet.';
+  }
+}
+
+document.getElementById('reset').addEventListener('click', () => {
+  saveRatings({});
+  engineShown.clear();
+  selectedStyles.clear();
+  updateStylePicker();
+  clearTimeout(librarySearchTimer);
+  librarySearchToken++;
+  document.getElementById('picks').textContent = '';
+  document.getElementById('card-search').value = '';
+  document.getElementById('library-results').hidden = true;
+  document.getElementById('library-list').textContent = '';
+  document.getElementById('library-note').textContent = '';
+  render(allSongs);
+  updateMapLikes();
+  resetFriendTest();
+});
+
+document.getElementById('card-search').addEventListener('input', () => {
+  filterCardList();
+  queueLibrarySearch();
+});
+
+document.getElementById('friend-search').addEventListener('input', renderFriendSearch);
+document.getElementById('friend-name').addEventListener('input', () => {
+  if (friendRatings.size === 10) renderFriendResult(friendHiddenEntries());
+});
+document.getElementById('friend-reset').addEventListener('click', resetFriendTest);
+
+drawCatalogMap();
+loadStylePicker();
+initFriendTest();
+
+Promise.all([
+  fetch('data/my/songs.csv', { cache: 'no-store' }).then(r => {
+    if (!r.ok) throw new Error('data/my/songs.csv: HTTP ' + r.status);
+    return r.text();
+  }),
+  fetch('data/text_emb.json', { cache: 'no-store' })
+    .then(r => {
+      if (!r.ok) throw new Error('data/text_emb.json: HTTP ' + r.status);
+      return r.json();
+    })
+    .catch(err => {
+      embeddingsError = err.message;
+      return { texts: {} };
+    })
+])
+  .then(([text, embeddings]) => {
+    songVectors = embeddings.texts || {};
+    render(parseCSV(text));
+  })
+  .catch(err => {
+    const list = document.getElementById('list');
+    list.textContent = '';
+    list.appendChild(el('div', 'empty', 'Could not load songs: ' + err.message));
+  });
+</script>
+</body>
+</html>
