@@ -117,13 +117,13 @@
     <h2>[Results: the main message in a few words]</h2>
     <p class="lead">[One line about what the numbers show.]</p>
     <div class="keys">
-      <div><b>[X]</b><span>[what this number is]</span></div>
-      <div><b>[X]</b><span>[what this number is]</span></div>
-      <div><b>[X]</b><span>[what this number is]</span></div>
+      <div><b>6 of 9</b><span>hidden favourites found in the top 5</span></div>
+      <div><b>0.15</b><span>found by random picks, of 9</span></div>
+      <div><b>3</b><span>friends tested</span></div>
     </div>
 
     <div class="chart" id="chart" aria-label="Bar chart">
-      <div class="chart-title">[Chart title, for example: hidden favourites found per friend (of 3)]</div>
+      <div class="chart-title">Hidden favourites found per friend (of 3)</div>
       <!-- the bars are made from CHART at the bottom of this file -->
     </div>
 
@@ -132,10 +132,10 @@
       <table>
         <thead><tr><th>Friend</th><th>Found (of 3)</th><th>Random from their styles</th><th>Random from the library</th></tr></thead>
         <tbody>
-          <tr><td>Friend A</td><td class="x">[ ]</td><td>[ ]</td><td>[ ]</td></tr>
-          <tr><td>Friend B</td><td class="x">[ ]</td><td>[ ]</td><td>[ ]</td></tr>
-          <tr><td>Friend C</td><td class="x">[ ]</td><td>[ ]</td><td>[ ]</td></tr>
-          <tr class="total"><td>All</td><td class="x">[X of Y]</td><td>[ ]</td><td>[ ]</td></tr>
+          <tr><td>Friend A</td><td>2/3</td><td>-</td><td>0.05</td></tr>
+          <tr><td>Friend B</td><td>3/3</td><td>-</td><td>0.05</td></tr>
+          <tr><td>Friend C</td><td>1/3</td><td>-</td><td>0.05</td></tr>
+          <tr class="total"><td>All</td><td>6/9</td><td>-</td><td>0.15</td></tr>
         </tbody>
       </table>
       <p class="note">[How each column is computed, in one line.]</p>
@@ -212,9 +212,8 @@
 <script>
 // The bar chart: put your numbers here (value = average found per friend, of 3). null = not measured yet (shows X).
 const CHART = [
-  { label: "[My taste engine]", value: null, color: "#A3283D" },
-  { label: "[Random from their styles]", value: null, color: "#F09A4A" },
-  { label: "[Random from the library]", value: null, color: "#9AA3AE" },
+  { label: "My taste engine", value: 2, color: "#A3283D" },
+  { label: "Random from the library", value: 0.05, color: "#9AA3AE" },
 ];
 const MAX = 3;
 const chart = document.getElementById("chart");
