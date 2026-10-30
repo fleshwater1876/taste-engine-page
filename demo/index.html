@@ -1602,13 +1602,15 @@ function renderFriendResult(hidden) {
   if (!found) result.appendChild(friendMap(hidden, visible, chosen.map(candidate => candidate.song)));
   if (found > 0) {
     const parts = [];
-    if (styleAverage) {
-      const x = found / styleAverage;
+    const styleShown = styleAverage === null ? 0 : Number(styleAverage.toFixed(2));
+    const libShown = Number(libraryAverage.toFixed(2));
+    if (styleShown) {
+      const x = found / styleShown;
       parts.push(x >= 1 ? x.toFixed(1) + '× better than same-style random'
         : x.toFixed(1) + '× as often as same-style random');
     }
-    if (libraryAverage) {
-      const y = found / libraryAverage;
+    if (libShown) {
+      const y = found / libShown;
       parts.push(y >= 1 ? y.toFixed(1) + '× better than random'
         : y.toFixed(1) + '× as often as random');
     }
