@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Taste Engine: recommending songs by how they sound</title>
+<style>
+  @page { size: A4; margin: 18mm 18mm 16mm; }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: #1d1b18; background: #fff; font: 11.5pt/1.55 Georgia, "Times New Roman", serif; }
+  main { max-width: 168mm; margin: 0 auto; }
+  h1 { font-size: 21pt; line-height: 1.18; margin: 0 0 10px; letter-spacing: -.2px; }
+  .author { font-size: 12pt; margin: 0; }
+  .aff { color: #555; font-size: 10pt; margin: 2px 0 18px; }
+  h2 { font-size: 13.5pt; margin: 20px 0 6px; }
+  h3 { font-size: 11.5pt; margin: 14px 0 4px; }
+  p { margin: 0 0 9px; text-align: justify; }
+  .abstract { background: #f6f4ef; border-left: 3px solid #a3283d; padding: 12px 15px; margin: 0 0 18px; }
+  .abstract h2 { margin: 0 0 5px; font-size: 12pt; }
+  ul { margin: 0 0 10px 18px; padding: 0; }
+  li { margin: 0 0 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 6px 0 10px; font-size: 10pt; }
+  th, td { border-bottom: 1px solid #ddd; padding: 5px 6px; text-align: left; vertical-align: top; }
+  th { background: #f2efe9; font-weight: 600; }
+  td.num, th.num { text-align: right; }
+  .note { color: #555; font-size: 9.5pt; margin-top: -4px; }
+  .small { color: #555; font-size: 9.5pt; }
+  .page-break { break-before: page; }
+  h1, h2, h3 { break-after: avoid; page-break-after: avoid; }
+  table, .abstract { break-inside: avoid; page-break-inside: avoid; }
+  p, li { orphans: 3; widows: 3; }
+  a, .small { overflow-wrap: anywhere; }
+  ul.keep { break-inside: avoid; page-break-inside: avoid; }
+  @media print { a { color: inherit; text-decoration: none; } h2, h3 { break-after: avoid; } }
+</style>
+</head>
+<body>
+<main>
+<h1>Taste Engine: recommending songs by how they sound</h1>
+<p class="author">Adiya</p>
+<p class="aff">FRP 2026, AI Engineering track · ISSAI, Nazarbayev University</p>
+
+<div class="abstract">
+<h2>Abstract</h2>
+<p>Taste Engine is a small music recommender that compares songs by their sound, not by their genre label. It turns a 30-second clip of each song into 512 numbers with the open model CLAP, and recommends the five unrated songs closest to the songs I rated 4–5 stars.</p>
+<p>I tested two versions with three friends each. v1, with picks from all styles, found 6 of 9 hidden favourites; random picks from the same 293 unseen songs would find about 0.15. v2, with picks limited to each friend's styles, found 3 of 9, against 1.77 expected from random picks inside those styles. The groups were different, and the test is small: three friends per version, one library of 300 songs, and one listener's taste.</p>
+</div>
+
+<h2>Introduction</h2>
+<p>I choose songs by how they sound. A playlist labelled “indie rock” can hold two songs that sound completely different, and two songs from different genres can sound almost the same.</p>
+<p>Most recommenders learn from other people's listening: playlists, likes, skips (collaborative filtering). That works well for big services, but it cannot work when a song or a listener is new and has no history. Content-based recommenders use the song itself instead, which fits a small library. My question: can a model that only listens to the audio find songs I would really like?</p>
+
+<h2>What we built</h2>
+<ul>
+  <li><strong>Library:</strong> 300 songs from a public catalogue (30-second previews), plus a personal list of 76 songs I chose myself.</li>
+  <li><strong>Audio space:</strong> each 30-second clip becomes a 512-number vector with CLAP (LAION, Apache-2.0).</li>
+  <li><strong>Taste vector:</strong> the average of the songs I rated 4–5 stars, minus the average of the songs I rated 1–2 stars.</li>
+  <li><strong>Picks:</strong> the five unrated songs closest to my taste vector, each with a reason (“because you liked … (5★)”).</li>
+  <li><strong>Page:</strong> the songs are shown as cards with 1–5 stars that stay after reload, a “Get 5 new songs” button, a map of all songs, and a friend test.</li>
+  <li><strong>Friend test:</strong> a friend rates 10 songs; the page hides the 3 highest-rated ones, recommends 5 songs from the library, and reports how many of the 3 it found.</li>
+  <li><strong>Second version:</strong> the picks are limited to the styles of the friend's 4–5★ songs, and the page reports a same-style baseline next to the result.</li>
+</ul>
+
+<h2>How we measure</h2>
+<p>Every friend rates 10 songs from the 12 shown cards. The page hides that friend's 3 highest-rated songs, so the engine cannot see them. The engine then recommends 5 songs from the 300-song library. <strong>Found</strong> is how many of the 3 hidden favourites appear in those 5 picks.</p>
+<p>A separate profile check used two fixed profiles (a rock fan and a K-pop fan, 5 songs each rated 5★): both gave 5 of 5 picks in the right style.</p>
+<p><strong>Random.</strong> A random recommender picks 5 of the 293 songs. Each hidden song is in these 5 with the chance 5/293. So for 3 hidden songs, random picks find on average 3 × 5 / 293 = 15 / 293 ≈ 0.05 of 3 songs for one friend.</p>
+<p><strong>Same style.</strong> The friends chose their songs with style chips, so a simple rule could also work: “pick 5 random songs from the styles of the songs the friend liked”. We measure this rule on the same friends: it finds 0.59 of 3 on average (0.66, 0.44 and 0.67 for the three friends).</p>
+
+<h2>Three tests</h2>
+<h3>Test 1 — what CLAP hears</h3>
+<p>CLAP hears timbre and texture well: two shoegaze songs reach a cosine of 0.92, while shoegaze against indie rock gives 0.76–0.79. It does not read lyrics or genre labels, and a 30-second clip loses quiet intros and long build-ups.</p>
+
+<h3>Test 2 — hidden favourites</h3>
+<p>In v1, with sound only and picks from all styles, the engine found 6 of 9 hidden favourites, where random picks find about 0.15. It worked best for Friend B (3 of 3), who rated almost every one of the ten songs five stars in one style, so the hidden favourites sat close together.</p>
+<p>In v2, with picks limited to each friend's own styles, the engine found 3 of 9, against 1.77 expected from random picks inside those styles. The two groups were different: v2 used Friend K, Friend A and Friend B, while v1 used Friend A, Friend B and Friend C.</p>
+
+<h3>Test 3 — CLAP in the browser</h3>
+<p>The browser and the GPU produce the same sound numbers: cosine 0.998 on 4 songs (26 October 2026). The drop-a-song box is not on the public page yet, so a friend cannot use CLAP on the page. The public page compares the 376 sound vectors made on the GPU.</p>
+
+<h2 style="break-before: page; page-break-before: always;">Results</h2>
+<p>The baseline is listed first.</p>
+<table>
+  <thead><tr><th>Method</th><th class="num">Hidden favourites found (3 friends, 9 hidden)</th></tr></thead>
+  <tbody>
+    <tr><td>Random picks from the 293 unseen songs</td><td class="num">0.15 expected</td></tr>
+    <tr><td>Random picks inside the friend's styles</td><td class="num">1.77 expected</td></tr>
+    <tr><td>Taste Engine v1, sound only (all styles)</td><td class="num">6 found</td></tr>
+    <tr><td>Taste Engine v2, picks inside the friend's styles</td><td class="num">3 found</td></tr>
+  </tbody>
+</table>
+
+<h3>v2 — picks inside the friend's styles</h3>
+<table>
+  <thead><tr><th>Friend</th><th class="num">Found (of 3)</th><th class="num">Random from their styles</th><th class="num">Random from the library</th></tr></thead>
+  <tbody>
+    <tr><td>Friend K</td><td class="num">1/3</td><td class="num">0.66</td><td class="num">0.05</td></tr>
+    <tr><td>Friend A</td><td class="num">1/3</td><td class="num">0.44</td><td class="num">0.05</td></tr>
+    <tr><td>Friend B</td><td class="num">1/3</td><td class="num">0.67</td><td class="num">0.05</td></tr>
+    <tr><td><strong>All</strong></td><td class="num"><strong>3/9</strong></td><td class="num"><strong>1.77</strong></td><td class="num"><strong>0.15</strong></td></tr>
+  </tbody>
+</table>
+<p class="note">Same-style random = 1,000 simulated 5-song draws from the styles of the friend's 4–5★ songs; 0.59 per friend on average.</p>
+
+<h3>v1 — sound only, picks from all styles</h3>
+<table>
+  <thead><tr><th>Friend</th><th class="num">Found (of 3)</th><th class="num">Random from their styles</th><th class="num">Random from the library</th></tr></thead>
+  <tbody>
+    <tr><td>Friend A</td><td class="num">2/3</td><td class="num">not measured</td><td class="num">0.05</td></tr>
+    <tr><td>Friend B</td><td class="num">3/3</td><td class="num">not measured</td><td class="num">0.05</td></tr>
+    <tr><td>Friend C</td><td class="num">1/3</td><td class="num">not measured</td><td class="num">0.05</td></tr>
+    <tr><td><strong>All</strong></td><td class="num"><strong>6/9</strong></td><td class="num">not measured</td><td class="num"><strong>0.15</strong></td></tr>
+  </tbody>
+</table>
+<p class="note">Random from the library = 5 picks × 3 hidden / 293 unseen songs = 0.05 per friend; 0.15 for all three. Friends A and B in v2 are different people from Friends A and B in v1.</p>
+
+<p>The profile check gave 5 of 5 picks in the right style for the rock profile and 5 of 5 for the K-pop profile.</p>
+
+<h2>Limitations</h2>
+<ul class="keep">
+  <li>Only three friends tried each version, and each friend gave only 10 ratings.</li>
+  <li>v1 and v2 used different people, so 6 of 9 and 3 of 9 cannot be compared directly.</li>
+  <li>The library has 300 songs, so a “hit” is easier to get than in a catalogue of millions.</li>
+  <li>The model hears only a 30-second clip, so a quiet intro or a long build-up is lost.</li>
+  <li>The style labels are Apple search words, not labels from a music expert.</li>
+  <li>The test measures my library and my friends' taste, not a general audience.</li>
+  <li>v2 beats the same-style random baseline only 1.7 times, so “sound beats style” is not a safe claim yet.</li>
+</ul>
+
+<h2>Ethics</h2>
+<ul>
+  <li>Ratings stay in the browser; nothing is saved on a server and no account is needed.</li>
+  <li>The friend test uses no real names: friends appear as A, B, C and K.</li>
+  <li>Songs come from public 30-second previews; no listening data of other people is copied.</li>
+  <li>CLAP is used under its Apache-2.0 licence; the model runs in a short job, not on a phone.</li>
+  <li>The page says plainly how the test works, so a friend can see why a song was picked.</li>
+</ul>
+
+<h2>Conclusion</h2>
+<p>A model that only listens to the sound found 6 of 9 hidden favourites in v1, against about 0.15 expected from random picks. When the picks stayed inside each friend's styles, it found 3 of 9, against 1.77 expected from random picks in those styles.</p>
+<p>So the sound model beats random, and it also beats random picks inside the same styles. But the margin in v2 is small, and the two groups were different. The next step is to mix sound with style, and to repeat the test with more people so the numbers become proof instead of a hint.</p>
+
+<p class="small">Code and live demo: https://github.com/fleshwater1876/taste-engine-page</p>
+</main>
+</body>
+</html>
