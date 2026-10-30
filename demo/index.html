@@ -104,6 +104,8 @@
   ul { list-style:none; margin:16px 0 0; padding:0; display:grid; gap:10px; }
   li.song { background:var(--card); border:1px solid #e6dfd4; border-radius:14px; padding:14px 16px; }
   #list ul, #library-list ul { grid-template-columns:repeat(2,minmax(0,1fr)); align-items:start; }
+  #list-more { margin:16px auto 0; }
+  #list-more:not([hidden]) { display:block; }
   #friend-results ul { grid-template-columns:repeat(3,minmax(0,1fr)); align-items:start; }
   .title { font-weight:650; }
   .blurb { color:var(--muted); font-size:14px; margin:2px 0 8px; }
@@ -231,6 +233,7 @@
   </div>
   <div id="search-note" class="outside-note"></div>
   <div id="list"></div>
+  <button id="list-more" class="get" type="button" hidden>Show more</button>
   <div id="library-results" class="similar" hidden>
     <h2>From the library</h2>
     <div id="library-note" class="outside-note"></div>
@@ -353,6 +356,9 @@ let mapSvg = null;
 let mapProject = null;
 let librarySearchTimer = null;
 let librarySearchToken = 0;
+const SONG_FIRST = 6;
+const SONG_MORE = 6;
+let songLimit = SONG_FIRST;
 const friendRatings = new Map();
 let friendStyle = '';
 let friendOrder = 0;
@@ -668,6 +674,7 @@ function showSimilar(song, options = {}) {
 
 function render(songs) {
   allSongs = songs;
+  songLimit = SONG_FIRST;
   document.getElementById('reset').disabled = false;
   const list = document.getElementById('list');
   const summary = document.getElementById('summary');
@@ -748,14 +755,22 @@ function filterCardList() {
   if (!input) return;
   const query = normText(input.value);
   const cards = [...document.querySelectorAll('#list li.song')];
-  let shown = 0;
-  cards.forEach(card => {
+  const matched = cards.filter(card => {
     const textMatch = !query || normText(card.dataset.search || '').includes(query);
     const styleMatch = !selectedStyles.size || selectedStyles.has(card.dataset.group);
-    const match = textMatch && styleMatch;
-    card.hidden = !match;
-    if (match) shown++;
+    return textMatch && styleMatch;
   });
+  const matchedSet = new Set(matched);
+  cards.forEach(card => {
+    card.hidden = !matchedSet.has(card) || matched.indexOf(card) >= songLimit;
+  });
+  const shown = matched.length;
+  const more = document.getElementById('list-more');
+  if (more) {
+    const left = shown - songLimit;
+    more.hidden = left <= 0;
+    more.textContent = 'Show more (' + Math.max(left, 0) + ' left)';
+  }
   const note = document.getElementById('search-note');
   if (note) note.textContent = query && shown === 0 ? 'No songs in your list match “' + input.value.trim() + '”.' : '';
 }
@@ -2148,6 +2163,11 @@ document.getElementById('reset').addEventListener('click', () => {
 document.getElementById('card-search').addEventListener('input', () => {
   filterCardList();
   queueLibrarySearch();
+});
+
+document.getElementById('list-more').addEventListener('click', () => {
+  songLimit += SONG_MORE;
+  filterCardList();
 });
 
 document.getElementById('friend-submit').addEventListener('click', () => {
