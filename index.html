@@ -1,9 +1,7 @@
 <!doctype html>
-<!-- Project page template for the FRP 2026 taste engine (Adiya). NOT FILLED YET.
-     Every [ ... ] is a place to write. Grey hints in small text tell you what to write: delete them when done.
-     Numbers: ONLY numbers you really measured (results.md, your paper). Not measured? Delete that line. Never invent.
-     Public page: no audio files, no real friend names (Friend A, B, C), no keys.
-     Pictures: replace images/*.svg with your own pictures (same names, or change the src). -->
+<!-- Project page for the FRP 2026 taste engine (Adiya).
+     Numbers come from results.md and paper_draft.md.
+     Public page: no audio files, no real friend names, no keys. -->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -21,34 +19,33 @@
 <nav class="top">
   <div class="wrap top-in">
     <a class="brand" href="#">♪ Taste Engine</a>
-    <div class="top-links"><a href="#demo">Demo</a><a href="paper.pdf">Paper</a></div>
+    <div class="top-links"><a href="#demo">Demo</a><a href="#results">Results</a></div>
   </div>
 </nav>
 
 <header class="hero wrap">
   <div class="eyebrow">FRP 2026 <span>/</span> AI Engineering <span>/</span> Research</div>
   <h1>Taste Engine</h1>
-  <p class="subtitle">Five songs you rate 5★ in. Five new songs that sound like them out.</p>
-  <p class="authors"><a href="#">Adiya</a></p>
+  <p class="subtitle">Rate songs 1–5★. Five new songs that sound like them come back, each with a reason.</p>
+  <p class="authors"><a href="#abstract">Adiya</a></p>
   <p class="aff">FRP 2026, AI Engineering track · ISSAI, Nazarbayev University</p>
   <div class="buttons">
-    <a class="pill" href="paper.pdf">📄 Paper</a>
     <a class="pill" href="demo/">▶ Live demo</a>
     <a class="pill" href="#results">📊 Results</a>
     <a class="pill light" href="#bibtex">{ } BibTeX</a>
   </div>
-  <p class="tagline">Rate what you love, press Get, and see songs that sound like it — with the reason written next to each one.</p>
+  <p class="tagline">Rate what you love, press Get, and see five songs that sound like it — with the reason written next to each one.</p>
 
   <figure class="teaser">
-    <img src="images/teaser.svg" alt="Your rated songs, the song library and five new picks with reasons">
-    <figcaption>The five songs you rated 5★ are compared with every song in the library; the five closest ones come back, each next to the liked song it is close to.</figcaption>
+    <img src="images/teaser.jpg" alt="Six song cards with stars, next to 76 songs I love">
+    <figcaption>My list has 76 songs; the engine uses the ones I rate 4–5★. The same style label does not mean the same sound.</figcaption>
   </figure>
 
   <div class="stats">
-    <div><b>319</b><span>songs in the library</span></div>
-    <div><b>3</b><span>real friends tested</span></div>
-    <div><b>6 of 9</b><span>hidden favourites found</span></div>
-    <div><b>20</b><span>styles in the library</span></div>
+    <div><b>376</b><span>songs in the catalogue</span></div>
+    <div><b>300</b><span>possible new picks</span></div>
+    <div><b>3</b><span>friends per version</span></div>
+    <div><b>3 of 9</b><span>hidden favourites found (v2)</span></div>
   </div>
 </header>
 
@@ -63,108 +60,122 @@
   <div class="narrow">
     <h2>Abstract</h2>
     <p>Music apps recommend from what millions of other people listen to, not from what you hear, so a listener with no history gets popular songs instead of personal ones. With one listener and a small library there is no other people's data to use at all.</p>
-    <p>I built a taste engine that compares songs by sound: every track becomes a vector with CLAP audio embeddings, your 1–5★ ratings become one taste profile, and the five closest unrated songs come back with the title of the liked song behind each pick. The library holds 319 songs in 20 styles, every one with descriptive tags.</p>
-    <p>I tested it two ways: two fixed profiles (a rock fan and a K-pop fan) to see if the picks stay in the right style, and three friends who hid three real favourites each in the unseen songs. In the friend test 6 of 9 hidden favourites came back in the top 5, where random picks would find about 0.15 of 9.</p>
+    <p>I built a taste engine that compares songs by sound: every track becomes a 512-number vector with CLAP, your 1–5★ ratings become one taste profile, and the five closest unrated songs come back with the liked song behind each pick. The catalogue has 376 songs: my 76 songs and 300 possible new picks in 19 style labels.</p>
+    <p>I tested two versions with three friends each. v1, with picks from all styles, found 6 of 9 hidden favourites; random picks from 293 unseen songs would find about 0.15. v2, with picks limited to the friend's styles, found 3 of 9, against 1.77 expected from random picks inside those styles. The groups were different, so this is not a direct v1-versus-v2 comparison.</p>
   </div>
 </section>
 
 <section id="how">
   <div class="wrap">
-    <h2>[How it works: a short title]</h2>
-    <p class="lead">[One line: the idea of the method]</p>
+    <h2>How it works: sound → numbers → five picks</h2>
+    <p class="lead">CLAP turns a 30-second clip into 512 numbers; your ratings turn those numbers into one taste.</p>
     <figure class="wide">
-      <img src="images/overview.svg" alt="[Overview diagram]">
-      <figcaption>[Caption: song → numbers → taste → 5 new songs]</figcaption>
+      <img src="images/overview.jpg" alt="A song cover, a 30-second clip, 512 numbers and a dot on a sound map">
+      <figcaption>A song cover → a 30-second clip → 512 numbers → a dot on the sound map. Close dots sound alike.</figcaption>
     </figure>
     <div class="cols3">
-      <div class="col"><div class="num">01</div><h3>[Listen]</h3><p>[How a song becomes numbers.]</p></div>
-      <div class="col"><div class="num">02</div><h3>[Your taste]</h3><p>[How your ratings become one taste.]</p></div>
-      <div class="col"><div class="num">03</div><h3>[New songs]</h3><p>[How the 5 songs are chosen, and the reason "because you liked".]</p></div>
+      <div class="col"><div class="num">01</div><h3>Listen</h3><p>A 30-second clip of each song becomes 512 numbers with CLAP. Songs that sound alike land close together.</p></div>
+      <div class="col"><div class="num">02</div><h3>Your taste</h3><p>The 4–5★ songs are averaged, and the 1–2★ songs are subtracted, to make one taste vector.</p></div>
+      <div class="col"><div class="num">03</div><h3>New songs</h3><p>The five unrated library songs closest to that vector come back, each naming the liked song it is closest to.</p></div>
     </div>
   </div>
 </section>
 
 <section id="data" class="band">
   <div class="wrap">
-    <h2>[N] songs. [N] styles.</h2>
-    <p class="lead">[Where the songs come from, in one line. No audio files on this page.]</p>
+    <h2>376 songs. 300 new-song candidates.</h2>
+    <p class="lead">My 76 songs show my taste; the five picks come only from 300 library songs found with the iTunes Search API. The page hosts no audio.</p>
     <div class="grid2">
-      <div class="cat"><span class="ic">A</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
-      <div class="cat"><span class="ic">B</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
-      <div class="cat"><span class="ic">C</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
-      <div class="cat"><span class="ic">D</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
-      <div class="cat"><span class="ic">E</span><div><h4>[Style]</h4><p>[Short description]</p></div><em>[N] songs</em></div>
-      <div class="cat"><span class="ic">♪</span><div><h4>[My own songs]</h4><p>[Your taste: which styles]</p></div><em>[N] songs</em></div>
+      <div class="cat"><span class="ic">A</span><div><h4>Pop</h4><p>Radio pop</p></div><em>15 songs</em></div>
+      <div class="cat"><span class="ic">B</span><div><h4>Rock</h4><p>Guitars and drums</p></div><em>15 songs</em></div>
+      <div class="cat"><span class="ic">C</span><div><h4>Hip hop</h4><p>Rap and beats</p></div><em>15 songs</em></div>
+      <div class="cat"><span class="ic">D</span><div><h4>K-pop</h4><p>Korean pop</p></div><em>15 songs</em></div>
+      <div class="cat"><span class="ic">E</span><div><h4>Jazz</h4><p>Sax, piano and swing</p></div><em>15 songs</em></div>
+      <div class="cat"><span class="ic">♪</span><div><h4>My own songs</h4><p>My taste: shoegaze, indie rock and alternative rock</p></div><em>76 songs</em></div>
     </div>
-    <p class="note">[One line about the data, for example where the style labels come from.]</p>
+    <p class="note">Six examples from 19 library labels; each library label has 15 songs, plus 30 “top kz” songs. Style labels are Apple search words, not expert labels. My 76 songs are not candidates for the five picks.</p>
   </div>
 </section>
 
 <section id="tests">
   <div class="wrap">
-    <h2>[How we test it]</h2>
-    <p class="lead">[One line: we compare with a baseline, so the numbers mean something.]</p>
+    <h2>How we test it</h2>
+    <p class="lead">Every number has a baseline, so a hit is more than a lucky pick.</p>
     <div class="cols3">
-      <div class="col"><div class="num">TEST 1</div><h3>[Does it hear the style?]</h3><p>[What you measure and the baseline.]</p></div>
-      <div class="col"><div class="num">TEST 2</div><h3>[Friend test]</h3><p>[Hide 3 favourites, find them again. The baselines.]</p></div>
-      <div class="col"><div class="num">TEST 3</div><h3>[Browser = GPU?]</h3><p>[The model in the page gives the same numbers as Python.]</p></div>
+      <div class="col"><div class="num">TEST 1</div><h3>Does CLAP hear the style?</h3><p>Two shoegaze songs score 0.92; shoegaze against indie rock scores 0.76–0.79. The model compares sound, not labels.</p></div>
+      <div class="col"><div class="num">TEST 2</div><h3>The friend test</h3><p>A friend rates 10 songs; the page hides their 3 favourites, recommends 5, and counts how many come back.</p></div>
+      <div class="col"><div class="num">TEST 3</div><h3>Browser = GPU?</h3><p>The browser and the Python job give the same sound numbers: cosine 0.998 on 4 songs (26 October 2026).</p></div>
     </div>
   </div>
 </section>
 
 <section id="results" class="band">
   <div class="wrap">
-    <h2>[Results: the main message in a few words]</h2>
-    <p class="lead">[One line about what the numbers show.]</p>
+    <h2>Results: sound beats random, but style is a strong baseline</h2>
+    <p class="lead">v2 found 3 of 9 hidden favourites, against 1.77 expected from random picks inside the friends' styles. v1 found 6 of 9 in a different group.</p>
     <div class="keys">
-      <div><b>6 of 9</b><span>hidden favourites found in the top 5</span></div>
-      <div><b>0.15</b><span>found by random picks, of 9</span></div>
-      <div><b>3</b><span>friends tested</span></div>
+      <div><b>3 of 9</b><span>hidden favourites found in v2</span></div>
+      <div><b>1.77</b><span>expected from same-style random</span></div>
+      <div><b>6 of 9</b><span>found in v1, a different group</span></div>
     </div>
 
     <div class="chart" id="chart" aria-label="Bar chart">
-      <div class="chart-title">Hidden favourites found per friend (of 3)</div>
+      <div class="chart-title">Hidden favourites found per friend, v2 (of 3)</div>
       <!-- the bars are made from CHART at the bottom of this file -->
     </div>
 
     <div class="tablewrap">
-      <div class="table-cap">[Table title: the friend test, date]</div>
+      <div class="table-cap">Engine v2 — sound inside the friend's styles, 30 October 2026</div>
       <table>
         <thead><tr><th>Friend</th><th>Found (of 3)</th><th>Random from their styles</th><th>Random from the library</th></tr></thead>
         <tbody>
-          <tr><td>Friend A</td><td>2/3</td><td>-</td><td>0.05</td></tr>
-          <tr><td>Friend B</td><td>3/3</td><td>-</td><td>0.05</td></tr>
-          <tr><td>Friend C</td><td>1/3</td><td>-</td><td>0.05</td></tr>
-          <tr class="total"><td>All</td><td>6/9</td><td>-</td><td>0.15</td></tr>
+          <tr><td>Friend K</td><td>1/3</td><td>0.66</td><td>0.05</td></tr>
+          <tr><td>Friend A</td><td>1/3</td><td>0.44</td><td>0.05</td></tr>
+          <tr><td>Friend B</td><td>1/3</td><td>0.67</td><td>0.05</td></tr>
+          <tr class="total"><td>All</td><td>3/9</td><td>1.77</td><td>0.15</td></tr>
         </tbody>
       </table>
-      <p class="note">[How each column is computed, in one line.]</p>
+      <p class="note">Same-style random = 1,000 simulated 5-song draws from the styles of the friend's 4–5★ songs; 0.59 per friend on average.</p>
+    </div>
+
+    <div class="tablewrap">
+      <div class="table-cap">Engine v1 — sound only, picks from all styles, 28 October 2026 (different friends)</div>
+      <table>
+        <thead><tr><th>Friend</th><th>Found (of 3)</th><th>Random from their styles</th><th>Random from the library</th></tr></thead>
+        <tbody>
+          <tr><td>Friend A</td><td>2/3</td><td>not measured</td><td>0.05</td></tr>
+          <tr><td>Friend B</td><td>3/3</td><td>not measured</td><td>0.05</td></tr>
+          <tr><td>Friend C</td><td>1/3</td><td>not measured</td><td>0.05</td></tr>
+          <tr class="total"><td>All</td><td>6/9</td><td>not measured</td><td>0.15</td></tr>
+        </tbody>
+      </table>
+      <p class="note">Random from the library = 5 picks × 3 hidden / 293 unseen songs = 0.05 per friend; 0.15 for all three.</p>
     </div>
 
     <div class="cols3">
-      <div class="col"><div class="num">01</div><h3>[Found]</h3><p>[What "found" means.]</p></div>
-      <div class="col"><div class="num">02</div><h3>[Random from their styles]</h3><p>[The hard baseline.]</p></div>
-      <div class="col"><div class="num">03</div><h3>[Random from the library]</h3><p>[The easy baseline: 5 × 3 / pool size.]</p></div>
+      <div class="col"><div class="num">01</div><h3>Found</h3><p>A hidden 4–5★ song appeared in the five picks.</p></div>
+      <div class="col"><div class="num">02</div><h3>Random from their styles</h3><p>The hard baseline: five random picks from the styles the friend liked.</p></div>
+      <div class="col"><div class="num">03</div><h3>Random from the library</h3><p>The easy baseline: five random picks from all 293 unseen songs.</p></div>
     </div>
   </div>
 </section>
 
 <section id="demo">
   <div class="wrap">
-    <h2>[Look inside: example picks]</h2>
-    <p class="lead">[One line: the same engine, different tastes.]</p>
+    <h2>Look inside: example picks</h2>
+    <p class="lead">The same engine, three different tastes.</p>
     <div class="case-tabs" role="tablist">
-      <button class="on" data-case="0">01 [Rock fan]</button>
-      <button data-case="1">02 [K-pop fan]</button>
-      <button data-case="2">03 [My taste]</button>
+      <button class="on" data-case="0">01 Rock fan</button>
+      <button data-case="1">02 K-pop fan</button>
+      <button data-case="2">03 My taste</button>
     </div>
     <div class="case">
-      <div class="case-panel on"><h3>[Question this example answers]</h3><p>[2 lines: which songs were liked, which 5 came out, why it is interesting.]</p><img src="images/case1.svg" alt="[screenshot]"></div>
-      <div class="case-panel"><h3>[Question this example answers]</h3><p>[2 lines]</p><img src="images/case2.svg" alt="[screenshot]"></div>
-      <div class="case-panel"><h3>[Question this example answers]</h3><p>[2 lines]</p><img src="images/case3.svg" alt="[screenshot]"></div>
+      <div class="case-panel on"><h3>Can it stay in a loud style?</h3><p>Five 5★ rock songs went in. All five picks were rock, and each one named the liked song behind it.</p></div>
+      <div class="case-panel"><h3>Does a different style still work?</h3><p>Five 5★ K-pop songs went in. All five picks were K-pop, so the engine was not stuck on one genre.</p></div>
+      <div class="case-panel"><h3>What does my own taste look like?</h3><p>My 76 songs include shoegaze and indie rock. With Bloodhail at 5★, the page returned five library songs, each with a reason.</p></div>
     </div>
     <div class="demo-box">
-      <div><h3>Try it yourself</h3><p>[Rate a few songs, press Get, or do the friend test. Works on a phone.]</p></div>
+      <div><h3>Try it yourself</h3><p>Rate three songs, press Get 5 new songs, or run the 10-song friend test. It works on a phone.</p></div>
       <a class="pill" href="demo/">▶ Open the live demo</a>
     </div>
   </div>
@@ -173,38 +184,38 @@
 <section id="limits" class="band">
   <div class="narrow">
     <h2>Reading the results</h2>
-    <p>[Limitations, honestly: how many friends, 30-second previews, where the style labels come from, …]</p>
-    <p>[What the numbers do NOT show.]</p>
+    <p>Only three friends tried each version, with 10 ratings each. v1 and v2 used different people, so 6 of 9 and 3 of 9 cannot be compared directly. The library has 300 candidates, the clips are 30 seconds, and the style labels are Apple search words.</p>
+    <p>This is one listener's taste in one small library, not proof for a general audience. v2 beats the same-style random baseline only 1.7 times, so “sound beats style” is not a safe claim yet.</p>
   </div>
 </section>
 
 <section id="next">
   <div class="wrap">
-    <h2>[Try, check, build on it]</h2>
+    <h2>Try it, check it, build on it</h2>
     <div class="cols3">
-      <div class="col"><div class="num">01</div><h3>[Try the demo]</h3><p>[One line]</p></div>
-      <div class="col"><div class="num">02</div><h3>[Read the paper]</h3><p>[One line]</p></div>
-      <div class="col"><div class="num">03</div><h3>[What is next]</h3><p>[One line: your next idea]</p></div>
+      <div class="col"><div class="num">01</div><h3>Try the demo</h3><p>Rate three songs and see the five picks with their reasons.</p></div>
+      <div class="col"><div class="num">02</div><h3>Check the limits</h3><p>The limits section says what the three-friend test does not prove.</p></div>
+      <div class="col"><div class="num">03</div><h3>What is next</h3><p>Mix sound with style, and test 10–12 friends on the same version.</p></div>
     </div>
-    <div class="buttons center"><a class="pill" href="demo/">Live demo</a><a class="pill light" href="paper.pdf">Paper (PDF)</a></div>
+    <div class="buttons center"><a class="pill" href="demo/">Live demo</a><a class="pill light" href="#results">See results</a></div>
   </div>
 </section>
 
 <section id="bibtex" class="band">
   <div class="narrow">
     <div class="bib-head"><h2>BibTeX</h2><button id="copy">Copy citation</button></div>
-<pre id="bib">@misc{[yourname]2026tasteengine,
-  title  = {[Project name]: [Subtitle]},
-  author = {[Your first name]},
+<pre id="bib">@misc{adiya2026tasteengine,
+  title  = {Taste Engine: recommending songs by how they sound},
+  author = {Adiya},
   year   = {2026},
   note   = {FRP 2026, AI Engineering track, ISSAI, Nazarbayev University},
-  url    = {https://[your-github-name].github.io/[repository]/}
+  url    = {https://fleshwater1876.github.io/taste-engine-page/}
 }</pre>
   </div>
 </section>
 
 <footer>
-  <b>[Project name]</b>
+  <b>Taste Engine</b>
   <p>FRP 2026 · ISSAI, Nazarbayev University</p>
   <p class="small">Layout inspired by the Academic Project Page Template and Nerfies.</p>
 </footer>
@@ -212,7 +223,8 @@
 <script>
 // The bar chart: put your numbers here (value = average found per friend, of 3). null = not measured yet (shows X).
 const CHART = [
-  { label: "My taste engine", value: 2, color: "#A3283D" },
+  { label: "My taste engine (v2)", value: 1.0, color: "#A3283D" },
+  { label: "Random inside their styles", value: 0.59, color: "#C98B99" },
   { label: "Random from the library", value: 0.05, color: "#9AA3AE" },
 ];
 const MAX = 3;
